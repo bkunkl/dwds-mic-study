@@ -100,7 +100,7 @@ Run everything from the repository root unless a script's header says otherwise 
 written to. Paths resolve relative to the working directory (`REPO_ROOT="$(pwd)"` in the shell
 scripts, plain relative paths in the R scripts).
 
-## Before you start
+## Prerequisites
 
 1. **Build the containers** you need -- `containers/README.md`, which also lists every tool and
    package version used. Recipes only; images are not distributed.
