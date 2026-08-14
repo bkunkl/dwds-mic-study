@@ -1,0 +1,17 @@
+Bootstrap: docker
+From: mambaorg/micromamba:1.5.8
+
+%post
+    micromamba install -y -n base -c conda-forge -c bioconda metabat2=2.18
+    micromamba clean -a -y
+
+%environment
+    export PATH=/opt/conda/bin:$PATH
+
+%labels
+    Author Kunkli Balazs Tibor <kunkli.balazs.tibor@uni-nke.hu>
+    Version metabat2-2.18
+    Description MetaBAT2 2.18 -- only jgi_summarize_bam_contig_depths is used, to generate the per-contig depth file consumed downstream
+
+%test
+    jgi_summarize_bam_contig_depths --help

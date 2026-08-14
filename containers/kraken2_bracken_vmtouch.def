@@ -1,0 +1,20 @@
+Bootstrap: docker
+From: mambaorg/micromamba:1.5.8
+
+%post
+    micromamba install -y -n base -c conda-forge -c bioconda kraken2=2.1.5 bracken=3.1 vmtouch=1.3.1
+    micromamba clean -a -y
+
+%environment
+    export PATH=/opt/conda/bin:$PATH
+
+%labels
+    Author Kunkli Balazs Tibor <kunkli.balazs.tibor@uni-nke.hu>
+    Version kraken2-2.1.5_bracken-3.1_vmtouch-1.3.1
+    Description Kraken2 2.1.5 + Bracken 3.1 taxonomic profiling (confidence 0.1) with vmtouch to hold the PlusPF database in page cache across the sample loop
+
+%test
+    k2 --version
+    # bracken has no --version flag; confirm the pinned build instead
+    micromamba list -n base bracken
+    vmtouch 2>&1 | head -1

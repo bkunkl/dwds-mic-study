@@ -1,0 +1,40 @@
+Group,Genus,Notes
+Haloalkaliphilic / Halophilic,Thioalkalivibrio,Dominant SOB in soda lakes
+Haloalkaliphilic / Halophilic,Thioalkalimicrobium,Now merged into Thiomicrospira
+Haloalkaliphilic / Halophilic,Thioalkalispira,Natronophilic SOB
+Haloalkaliphilic / Halophilic,Thioalkalibacter,Natronophilic SOB
+Haloalkaliphilic / Halophilic,Halothiobacillus,Moderate halophile
+Haloalkaliphilic / Halophilic,Thiohalomonas,Moderately halophilic SOB
+Haloalkaliphilic / Halophilic,Thiohalophilus,Moderately halophilic SOB
+Haloalkaliphilic / Halophilic,Thiohalospira,Extreme halophile
+Haloalkaliphilic / Halophilic,Thiohalorhabdus,Extreme halophile
+Marine pelagic / OMZ,Candidatus Thioglobus,SUP05 clade; OMZ and hydrothermal plumes
+Hydrothermal vents / Redoxclines,Sulfurimonas,Campylobacterota; widespread at vents
+Hydrothermal vents / Redoxclines,Sulfurovum,Campylobacterota
+Hydrothermal vents / Redoxclines,Sulfuricurvum,Campylobacterota
+Filamentous / Giant SOB,Beggiatoa,Large filaments; nitrate storage
+Filamentous / Giant SOB,Thioploca,Sheath-forming; nitrate-storing
+Filamentous / Giant SOB,Thiothrix,Filamentous SOB in wastewater
+Filamentous / Giant SOB,Thiomargarita,Giant SOB; nitrate-accumulating
+Classical neutrophilic SOB,Paracoccus,Model Sox pathway organism
+Classical neutrophilic SOB,Starkeya,Formerly Thiobacillus novellus
+Classical neutrophilic SOB,Thiobacillus,Includes denitrifying species
+Classical neutrophilic SOB,Hydrogenovibrio,Reclassified from Thiomicrospira
+Classical neutrophilic SOB,Thiomicrorhabdus,Reclassified from Thiomicrospira
+Classical neutrophilic SOB,Aquifex,Microaerophilic thermophile
+Acidophilic SOB,Acidithiobacillus,Bioleaching and AMD environments
+Acidophilic SOB,Thermithiobacillus,Thermophilic sulfur oxidizer
+Phototrophic SOB,Allochromatium,Purple sulfur bacteria
+Phototrophic SOB,Thiocapsa,Purple sulfur bacteria
+Phototrophic SOB,Chlorobium,Green sulfur bacteria
+Phototrophic SOB,Chlorobaculum,Green sulfur bacteria
+Oil reservoir SOB,Thioclava,Marine SOB detected in oil reservoirs
+Oil reservoir SOB,Rhodobacter,Phototrophic; some sulfur oxidizers; filter for R. capsulatus
+Oil reservoir SOB,Rhodovulum,Phototrophic; some sulfur oxidizers
+Oil reservoir SOB,Sulfurospirillum,Detected in oil reservoirs
+Archaea,Acidianus,Archaea
+Archaea,Sulfolobus,Archaea
+Archaea,Saccharolobus,Archaea
+Strain specific sulfur-oxidation,Pseudoaminobacter,Filter for P. salicylatoxidans
+Strain specific sulfur-oxidation,Methylobacterium,Filter for M. extorquens & fujisawaense
+Strain specific sulfur-oxidation,Methylorubrum,Filter for M. extorquens & fujisawaense

@@ -1,0 +1,50 @@
+Bootstrap: docker
+From: rocker/r-ver:4.5.1
+
+# R environment for the iNEXT diversity chain (hpc/03, hpc/04) and for the
+# local figure and statistics scripts. Package versions are the ones reported
+# for this study; R 4.5.1 / Bioconductor 3.21 is the release pair that carries
+# phyloseq 1.52.0 and ComplexHeatmap 2.28.0.
+
+%post
+    apt-get update && apt-get install -y --no-install-recommends \
+        libcurl4-openssl-dev libssl-dev libxml2-dev libgit2-dev \
+        libfontconfig1-dev libharfbuzz-dev libfribidi-dev \
+        libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev \
+        libglpk-dev libgsl-dev cmake git && \
+        rm -rf /var/lib/apt/lists/*
+
+    R -e 'install.packages(c("remotes", "BiocManager"), repos = "https://cloud.r-project.org")'
+    R -e 'BiocManager::install(version = "3.21", ask = FALSE)'
+
+    # Bioconductor: phyloseq 1.52.0, ComplexHeatmap 2.28.0 come with Bioc 3.21
+    R -e 'BiocManager::install(c("phyloseq", "ComplexHeatmap"), ask = FALSE, update = FALSE)'
+
+    # CRAN, version-pinned
+    R -e 'remotes::install_version("iNEXT",         version = "3.0.1",  repos = "https://cloud.r-project.org")'
+    R -e 'remotes::install_version("tidyverse",     version = "2.0.0",  repos = "https://cloud.r-project.org")'
+    R -e 'remotes::install_version("ggplot2",       version = "3.5.2",  repos = "https://cloud.r-project.org")'
+    R -e 'remotes::install_version("tibble",        version = "3.3.0",  repos = "https://cloud.r-project.org")'
+    R -e 'remotes::install_version("purrr",         version = "1.0.4",  repos = "https://cloud.r-project.org")'
+    R -e 'remotes::install_version("BiodiversityR", version = "2.17-2", repos = "https://cloud.r-project.org")'
+    R -e 'remotes::install_version("paletteer",     version = "1.6.0",  repos = "https://cloud.r-project.org")'
+    R -e 'remotes::install_version("cowplot",       version = "1.1.3",  repos = "https://cloud.r-project.org")'
+    R -e 'remotes::install_version("ggrepel",       version = "0.9.6",  repos = "https://cloud.r-project.org")'
+    R -e 'remotes::install_version("ggnewscale",    version = "0.5.2",  repos = "https://cloud.r-project.org")'
+    R -e 'remotes::install_version("circlize",      version = "0.4.18", repos = "https://cloud.r-project.org")'
+
+    # Not on CRAN
+    R -e 'install.packages("microViz", repos = c("https://david-barnett.r-universe.dev", "https://cloud.r-project.org"))'
+    R -e 'remotes::install_github("gmteunisse/fantaxtic")'   # v0.2.1
+
+%environment
+    export LC_ALL=C
+
+%labels
+    Author      dwds-mic-study
+    Version     R-4.5.1-Bioc-3.21
+    Description R environment for iNEXT diversity analysis and figure generation
+
+%test
+    R -e 'stopifnot(packageVersion("iNEXT") == "3.0.1"); cat("iNEXT OK\n")'
+    R -e 'library(phyloseq); library(ComplexHeatmap); cat("phyloseq", as.character(packageVersion("phyloseq")), "OK\n")'

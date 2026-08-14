@@ -1,0 +1,18 @@
+Bootstrap: docker
+From: mambaorg/micromamba:1.5.8
+
+%post
+    micromamba install -y -n base -c conda-forge -c bioconda fastqc=0.12.1 multiqc=1.29
+    micromamba clean -a -y
+
+%environment
+    export PATH=/opt/conda/bin:$PATH
+
+%labels
+    Author Kunkli Balazs Tibor <kunkli.balazs.tibor@uni-nke.hu>
+    Version fastqc-0.12.1_multiqc-1.29
+    Description FastQC 0.12.1 + MultiQC 1.29 read QC, run before/after BBDuk trimming
+
+%test
+    fastqc --version
+    multiqc --version

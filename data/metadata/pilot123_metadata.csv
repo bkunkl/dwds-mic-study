@@ -1,0 +1,14 @@
+batch,sample_number,sample_name,condition,type,Label
+batch,S174,Biofilm-DW-NO-nutri,no-nutri,Biofilm,Biofilm-no-nutri
+batch,S175,Biofilm-DW-w-nutri,w/-nutri,Biofilm,Biofilm-w/-nutri
+batch,S176,DW-no-nutri-pool,no-nutri,Bulk,Bulk-no-nutri
+batch,S177,DW-w-nutri-pool,w/-nutri,Bulk,Bulk-w/-nutri
+batch,S216,DW_NO_nutri_2K,no-nutri,Biofilm,Biofilm-no-nutri
+batch,S218,DW_w_nutri_2K,w/-nutri,Biofilm,Biofilm-w/-nutri
+batch,S217,DW_NO_nutri_4,no-nutri,Bulk,Bulk-no-nutri
+batch,S219,DW_w_nutri_3F,w/-nutri,Bulk,Bulk-w/-nutri
+batch,S1,DWnonutri2kuponG30521,no-nutri,Biofilm,Biofilm-no-nutri
+batch,S3,DWwnutri2G30524,w/-nutri,Biofilm,Biofilm-w/-nutri
+batch,S2,DWnonutri2metagenom,no-nutri,Bulk,Bulk-no-nutri
+batch,S4,DWwnutri2metag,w/-nutri,Bulk,Bulk-w/-nutri
+batch,S27,MIC3pilottomviz20241210ind,control,Control,Base-Water

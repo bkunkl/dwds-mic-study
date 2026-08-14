@@ -1,0 +1,26 @@
+Bootstrap: docker
+From: mambaorg/micromamba:1.5.8
+
+%post
+    apt-get update && apt-get install -y --no-install-recommends git ca-certificates && rm -rf /var/lib/apt/lists/*
+
+    # DIAMOND pinned to a 2H2025 release -- best-effort, verify before rebuilding
+    micromamba install -y -n base -c conda-forge -c bioconda hmmer prodigal blast metabat2 diamond=2.1.13
+    micromamba clean -a -y
+
+    # MagicLamp 1.0 (wraps the FeGenie 1.2 curated iron HMM set as its "FeGenie" genie)
+    git clone --branch V1.0 --depth 1 https://github.com/Arkadiy-Garber/MagicLamp.git /opt/MagicLamp
+
+%environment
+    export PATH=/opt/conda/bin:/opt/MagicLamp:$PATH
+    export iron_hmms=/opt/MagicLamp/hmms/iron
+
+%labels
+    Author Kunkli Balazs Tibor <kunkli.balazs.tibor@uni-nke.hu>
+    Version magiclamp-1.0_diamond-2.1.13
+    Description MagicLamp 1.0 (FeGenie genie, curated iron-cycling HMMs) + DIAMOND, BLASTp step vs NCBI nr
+
+%test
+    # MagicLamp.py has no --version flag; --help confirms the dispatcher is on PATH
+    MagicLamp.py --help
+    diamond --version

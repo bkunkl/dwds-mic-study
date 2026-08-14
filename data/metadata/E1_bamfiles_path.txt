@@ -1,0 +1,4 @@
+S174_contigs.fa	/path/to/repo/results/pilot1_ml100/assembly_megahit/S174.bam
+S175_contigs.fa	/path/to/repo/results/pilot1_ml100/assembly_megahit/S175.bam
+S176_contigs.fa	/path/to/repo/results/pilot1_ml100/assembly_megahit/S176.bam
+S177_contigs.fa	/path/to/repo/results/pilot1_ml100/assembly_megahit/S177.bam

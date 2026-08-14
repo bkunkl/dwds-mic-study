@@ -1,0 +1,17 @@
+Bootstrap: docker
+From: mambaorg/micromamba:1.5.8
+
+%post
+    micromamba install -y -n base -c conda-forge -c bioconda megahit=1.2.9
+    micromamba clean -a -y
+
+%environment
+    export PATH=/opt/conda/bin:$PATH
+
+%labels
+    Author Kunkli Balazs Tibor <kunkli.balazs.tibor@uni-nke.hu>
+    Version megahit-1.2.9
+    Description MEGAHIT 1.2.9, meta-sensitive preset assembler
+
+%test
+    megahit --version

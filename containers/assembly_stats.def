@@ -1,0 +1,19 @@
+Bootstrap: docker
+From: mambaorg/micromamba:1.5.8
+
+%post
+    micromamba install -y -n base -c conda-forge python=3.11 pip numpy
+    /opt/conda/bin/pip install assembly_stats==0.1.4
+    micromamba clean -a -y
+
+%environment
+    export PATH=/opt/conda/bin:$PATH
+
+%labels
+    Author Kunkli Balazs Tibor <kunkli.balazs.tibor@uni-nke.hu>
+    Version assembly_stats-0.1.4
+    Description assembly_stats 0.1.4 (Trizna), N50/L50 and related contig/scaffold metrics
+
+%test
+    # assembly_stats has no --version flag; confirm the pinned version via pip instead
+    pip show assembly_stats | grep -i version

@@ -1,0 +1,18 @@
+Bootstrap: docker
+From: mambaorg/micromamba:1.5.8
+
+%post
+    micromamba install -y -n base -c conda-forge -c bioconda bowtie2=2.5.4 samtools=1.21
+    micromamba clean -a -y
+
+%environment
+    export PATH=/opt/conda/bin:$PATH
+
+%labels
+    Author Kunkli Balazs Tibor <kunkli.balazs.tibor@uni-nke.hu>
+    Version bowtie2-2.5.4_samtools-1.21
+    Description Bowtie2 2.5.4 + SAMtools 1.21, shared because the pipeline always uses them back to back (host decontamination, contig index/mapping, BAM sort/index)
+
+%test
+    bowtie2 --version
+    samtools --version

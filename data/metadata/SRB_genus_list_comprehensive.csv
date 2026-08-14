@@ -1,0 +1,40 @@
+Group,Genus,Notes
+Archaea (SRM),Archaeoglobus,Euryarchaeota; thermophilic SRM; oil reservoirs
+Archaea (SRM),Caldivirga,Crenarchaeota; thermophilic SRM
+Archaea (SRM),Thermocladium,Crenarchaeota; thermophilic SRM
+Freshwater / LCFA-oxidizing SRB,Desulforegula,Long-chain fatty acid-oxidizing SRB; freshwater sediments
+Freshwater / sewer & drinking-water,Desulfomonile,Dehalogenating SRB; reductive dechlorination
+Haloalkaliphilic / Soda lakes,Desulfonatronospira,Extremely natronophilic sulfidogens (Desulfohalobiaceae); sulfate/sulfite/thiosulfate; dismutation
+Haloalkaliphilic / Soda lakes,Desulfonatronovibrio,Obligately alkaliphilic or moderately halophilic SRB; H2/formate donors; thiosulfate/sulfite dismutation reported
+Haloalkaliphilic / Soda lakes,Desulfonatronum,Obligately alkaliphilic SRB from soda lakes; sulfate/sulfite/thiosulfate; some lithoautotrophy
+Halophilic SRB,Desulfohalobium,Halophilic SRB from hypersaline lakes; type species D. retbaense; genome available
+Halophilic SRB,Desulfovermiculus,Moderately halophilic SRB; includes oil-field isolates; chemolithoautotrophic growth
+Hydrocarbon-degrading SRB,Desulfacinum,Thermophilic; oil environments
+Hydrocarbon-degrading SRB,Desulfatibacillum,n-alkane/alkene degraders
+Hydrocarbon-degrading SRB,Desulfatirhabdium,Butyrate-oxidizing
+Hydrocarbon-degrading SRB,Desulfoglaeba,n-alkane degrader
+Hydrocarbon-degrading SRB,Desulfotignum,Aromatic/alkane degraders; includes toluene- and phosphite-oxidizing strains; reservoir relevance
+Mesophilic SRB (marine/estuarine),Desulfobacca,Acetate specialist; outcompetes acetoclastic methanogens
+Mesophilic SRB (marine/estuarine),Desulfobacter,Acetate-oxidizing; marine sediments
+Mesophilic SRB (marine/estuarine),Desulfobacterium,Acetate-oxidizing; marine
+Mesophilic SRB (marine/estuarine),Desulfobacula,"Aromatic compound degrader (e.g., toluene/xylene)"
+Mesophilic SRB (marine/estuarine),Desulfobulbus,Dominant in some sewer biofilms; propionate/lactate users
+Mesophilic SRB (marine/estuarine),Desulfococcus,Marine sediments
+Mesophilic SRB (marine/estuarine),Desulfomicrobium,Widespread mesophile
+Mesophilic SRB (marine/estuarine),Desulfonema,Filamentous; cluster with Desulfosarcina/Desulfococcus
+Mesophilic SRB (marine/estuarine),Desulfosarcina,Marine sediments; ANME consortia partners
+Mesophilic SRB (marine/estuarine),Desulfotalea,Psychrophile from Arctic sediments
+Mesophilic SRB (marine/estuarine),Desulfovibrio,Common in many anoxic habitats; sewer/drinking-water biofilms reported
+Mesophilic SRB (marine/estuarine),Syntrophobacter,Propionate-oxidizing; syntrophic/mix of SRB traits
+Psychrophilic SRB (Arctic/marine),Desulfofaba,Psychrophilic propionate oxidizers; later emended; marine
+Psychrophilic SRB (Arctic/marine),Desulfofrigus,Psychrophilic SRB; Arctic marine sediments
+Spore-forming / Thermophilic (Firmicutes),Desulfofundulus,Reclassified from Desulfotomaculum; thermophilic spores
+Spore-forming / Thermophilic (Firmicutes),Desulfosporomusa,Gram-positive SRB
+Spore-forming / Thermophilic (Firmicutes),Desulfosporosinus,Gram-positive SRB
+Spore-forming / Thermophilic (Firmicutes),Desulfotomaculum,Spore-forming; oil reservoirs; thermophilic lineages
+Thermophilic Bacteria,Thermodesulfatator,Thermophilic SRB
+Thermophilic Bacteria,Thermodesulfobacterium,Thermodesulfobacteria; hydrothermal/oil reservoirs
+Thermophilic Bacteria,Thermodesulfobium,Thermodesulfobiaceae; thermophile
+Thermophilic Bacteria,Thermodesulforhabdus,Thermophilic SRB; oil reservoirs
+Thermophilic Bacteria,Thermodesulfovibrio,Nitrospirae; thermophile
+Thermophilic SRB,Desulfocaldus,Thermophile from hot environments; valid genus

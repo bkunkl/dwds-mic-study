@@ -1,0 +1,17 @@
+Bootstrap: docker
+From: mambaorg/micromamba:1.5.8
+
+%post
+    micromamba install -y -n base -c conda-forge -c bioconda bbmap=39.19
+    micromamba clean -a -y
+
+%environment
+    export PATH=/opt/conda/bin:$PATH
+
+%labels
+    Author Kunkli Balazs Tibor <kunkli.balazs.tibor@uni-nke.hu>
+    Version bbmap-39.19
+    Description BBTools/BBDuk 39.19 for adapter and poly-G trimming, Q20 quality filtering
+
+%test
+    bbduk.sh --version

@@ -1,0 +1,262 @@
+--- FeGenie.py.orig	2026-08-11 20:11:14.626216246 +0200
++++ FeGenie.py.new	2026-08-11 20:11:14.626216246 +0200
+@@ -1481,18 +1481,17 @@
+                         e = dmndblastDict[ls[1]][ls[2]]["e"]
+                         try:
+                             out.write(ls[0] + "," + ls[1] + "," + ls[2] + "," + ls[3] + "," + str(ls[4]) + "," + str(
+-                                metaDict[ls[3].split(".")[0]]) + "," + str(counter) + "," + str(
+-                                hemes) + "," + blasthit + "," + str(
++                                ls[5]) + "," + str(counter) + "," + str(hemes) + "," + blasthit + "," + str(
+                                 e) + "," + seq + "\n")
+                         except TypeError:
+                             out.write(ls[0] + "," + ls[1] + "," + ls[2] + "," + ls[3] + "," + ls[4] + "," + str(
+-                                counter) + "," + str(
++                                ls[5]) + "," + str(counter) + "," + str(
+                                 hemes) + "," + blasthit + "," + str(e) + "," + seq + "\n")
+ 
+                     else:
+                         try:
+                             out.write(ls[0] + "," + ls[1] + "," + ls[2] + "," + ls[3] + "," + str(ls[4]) + "," + str(
+-                                metaDict[ls[3].split(".")[0]]) + "," + str(counter) + "," + str(
++                                ls[5]) + "," + str(counter) + "," + str(
+                                 hemes) + "," + seq + "\n")
+ 
+                         except TypeError:
+@@ -1587,7 +1586,7 @@
+                         e = dmndblastDict[ls[1]][ls[2]]["e"]
+                         try:
+                             out.write(ls[0] + "," + ls[1] + "," + ls[2] + "," + ls[3] + "," + str(ls[4]) + "," + str(
+-                                metaDict[ls[3].split(".")[0]]) + "," + str(counter) + "," + str(
++                                ls[5]) + "," + str(counter) + "," + str(
+                                 hemes) + "," + blasthit + "," + str(
+                                 e) + "," + seq + "\n")
+                         except TypeError:
+@@ -1598,7 +1597,7 @@
+                     else:
+                         try:
+                             out.write(ls[0] + "," + ls[1] + "," + ls[2] + "," + ls[3] + "," + str(ls[4]) + "," + str(
+-                                metaDict[ls[3].split(".")[0]]) + "," + str(counter) + "," + str(
++                                ls[5]) + "," + str(counter) + "," + str(
+                                 hemes) + "," + seq + "\n")
+ 
+                         except TypeError:
+@@ -1618,7 +1617,7 @@
+             os.system("rm %s/FeGenie-summary.dmndout" % outDirectory)
+             os.system("rm %s/FeGenie-summary.fasta" % outDirectory)
+ 
+-        os.system("rm %s/FeGenie-summary.csv" % outDirectory)
++        # os.system("rm %s/FeGenie-summary.csv" % outDirectory)
+         os.system("mv %s/FeGenie-summary-blasthits.csv %s/FeGenie-summary.csv" % (outDirectory, outDirectory))
+ 
+         # FILTERING OUT FALSE POSITIVES FOR SIDEROPHORE GENES
+@@ -1841,7 +1840,7 @@
+                                         memoryDict[dataset][orf]["bit"] + "," +
+                                         memoryDict[dataset][orf]["cutoff"] + "," + memoryDict[dataset][orf][
+                                             "clu"] + "," +
+-                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] +
++                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] + "," +
+                                         memoryDict[dataset][orf]["blastEval"] + "," +
+                                         memoryDict[dataset][orf]["seq"] + "\n")
+                                 else:
+@@ -1860,7 +1859,7 @@
+                                         memoryDict[dataset][orf]["bit"] + "," +
+                                         memoryDict[dataset][orf]["cutoff"] + "," + memoryDict[dataset][orf][
+                                             "clu"] + "," +
+-                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] +
++                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] + "," +
+                                         memoryDict[dataset][orf]["blastEval"] + "," +
+                                         memoryDict[dataset][orf]["seq"] + "\n")
+                                 else:
+@@ -1879,7 +1878,7 @@
+                                         memoryDict[dataset][orf]["bit"] + "," +
+                                         memoryDict[dataset][orf]["cutoff"] + "," + memoryDict[dataset][orf][
+                                             "clu"] + "," +
+-                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] +
++                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] + "," +
+                                         memoryDict[dataset][orf]["blastEval"] + "," +
+                                         memoryDict[dataset][orf]["seq"] + "\n")
+                                 else:
+@@ -1898,7 +1897,7 @@
+                                         memoryDict[dataset][orf]["bit"] + "," +
+                                         memoryDict[dataset][orf]["cutoff"] + "," + memoryDict[dataset][orf][
+                                             "clu"] + "," +
+-                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] +
++                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] + "," +
+                                         memoryDict[dataset][orf]["blastEval"] + "," +
+                                         memoryDict[dataset][orf]["seq"] + "\n")
+                                 else:
+@@ -1917,7 +1916,7 @@
+                                         memoryDict[dataset][orf]["bit"] + "," +
+                                         memoryDict[dataset][orf]["cutoff"] + "," + memoryDict[dataset][orf][
+                                             "clu"] + "," +
+-                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] +
++                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] + "," +
+                                         memoryDict[dataset][orf]["blastEval"] + "," +
+                                         memoryDict[dataset][orf]["seq"] + "\n")
+                                 else:
+@@ -1936,7 +1935,7 @@
+                                         memoryDict[dataset][orf]["bit"] + "," +
+                                         memoryDict[dataset][orf]["cutoff"] + "," + memoryDict[dataset][orf][
+                                             "clu"] + "," +
+-                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] +
++                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] + "," +
+                                         memoryDict[dataset][orf]["blastEval"] + "," +
+                                         memoryDict[dataset][orf]["seq"] + "\n")
+                                 else:
+@@ -1957,7 +1956,7 @@
+                                     memoryDict[dataset][orf]["cat"] + "," + dataset + "," + orf + "," + hmm + "," +
+                                     memoryDict[dataset][orf]["bit"] + "," +
+                                     memoryDict[dataset][orf]["cutoff"] + "," + memoryDict[dataset][orf]["clu"] + "," +
+-                                    memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] +
++                                    memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] + "," +
+                                     memoryDict[dataset][orf]["blastEval"] + "," +
+                                     memoryDict[dataset][orf]["seq"] + "\n")
+                             else:
+@@ -1995,7 +1994,7 @@
+                                         memoryDict[dataset][orf]["bit"] + "," +
+                                         memoryDict[dataset][orf]["cutoff"] + "," + memoryDict[dataset][orf][
+                                             "clu"] + "," +
+-                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] +
++                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] + "," +
+                                         memoryDict[dataset][orf]["blastEval"] + "," +
+                                         memoryDict[dataset][orf]["seq"] + "\n")
+                                 else:
+@@ -2017,7 +2016,7 @@
+                                         memoryDict[dataset][orf]["bit"] + "," +
+                                         memoryDict[dataset][orf]["cutoff"] + "," + memoryDict[dataset][orf][
+                                             "clu"] + "," +
+-                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] +
++                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] + "," +
+                                         memoryDict[dataset][orf]["blastEval"] + "," +
+                                         memoryDict[dataset][orf]["seq"] + "\n")
+                                 else:
+@@ -2040,7 +2039,7 @@
+                                         memoryDict[dataset][orf]["bit"] + "," +
+                                         memoryDict[dataset][orf]["cutoff"] + "," + memoryDict[dataset][orf][
+                                             "clu"] + "," +
+-                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] +
++                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] + "," +
+                                         memoryDict[dataset][orf]["blastEval"] + "," +
+                                         memoryDict[dataset][orf]["seq"] + "\n")
+                                 else:
+@@ -2062,7 +2061,7 @@
+                                         memoryDict[dataset][orf]["bit"] + "," +
+                                         memoryDict[dataset][orf]["cutoff"] + "," + memoryDict[dataset][orf][
+                                             "clu"] + "," +
+-                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] +
++                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] + "," +
+                                         memoryDict[dataset][orf]["blastEval"] + "," +
+                                         memoryDict[dataset][orf]["seq"] + "\n")
+                                 else:
+@@ -2084,7 +2083,7 @@
+                                         memoryDict[dataset][orf]["bit"] + "," +
+                                         memoryDict[dataset][orf]["cutoff"] + "," + memoryDict[dataset][orf][
+                                             "clu"] + "," +
+-                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] +
++                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] + "," +
+                                         memoryDict[dataset][orf]["blastEval"] + "," +
+                                         memoryDict[dataset][orf]["seq"] + "\n")
+                                 else:
+@@ -2103,7 +2102,7 @@
+                                         memoryDict[dataset][orf]["bit"] + "," +
+                                         memoryDict[dataset][orf]["cutoff"] + "," + memoryDict[dataset][orf][
+                                             "clu"] + "," +
+-                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] +
++                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] + "," +
+                                         memoryDict[dataset][orf]["blastEval"] + "," +
+                                         memoryDict[dataset][orf]["seq"] + "\n")
+                                 else:
+@@ -2122,7 +2121,7 @@
+                                         memoryDict[dataset][orf]["bit"] + "," +
+                                         memoryDict[dataset][orf]["cutoff"] + "," + memoryDict[dataset][orf][
+                                             "clu"] + "," +
+-                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] +
++                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] + "," +
+                                         memoryDict[dataset][orf]["blastEval"] + "," +
+                                         memoryDict[dataset][orf]["seq"] + "\n")
+                                 else:
+@@ -2143,7 +2142,7 @@
+                                         memoryDict[dataset][orf]["bit"] + "," +
+                                         memoryDict[dataset][orf]["cutoff"] + "," + memoryDict[dataset][orf][
+                                             "clu"] + "," +
+-                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] +
++                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] + "," +
+                                         memoryDict[dataset][orf]["blastEval"] + "," +
+                                         memoryDict[dataset][orf]["seq"] + "\n")
+                                 else:
+@@ -2162,7 +2161,7 @@
+                                         memoryDict[dataset][orf]["bit"] + "," +
+                                         memoryDict[dataset][orf]["cutoff"] + "," + memoryDict[dataset][orf][
+                                             "clu"] + "," +
+-                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] +
++                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] + "," +
+                                         memoryDict[dataset][orf]["blastEval"] + "," +
+                                         memoryDict[dataset][orf]["seq"] + "\n")
+                                 else:
+@@ -2181,7 +2180,7 @@
+                                         memoryDict[dataset][orf]["bit"] + "," +
+                                         memoryDict[dataset][orf]["cutoff"] + "," + memoryDict[dataset][orf][
+                                             "clu"] + "," +
+-                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] +
++                                        memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] + "," +
+                                         memoryDict[dataset][orf]["blastEval"] + "," +
+                                         memoryDict[dataset][orf]["seq"] + "\n")
+                                 else:
+@@ -2201,7 +2200,7 @@
+                                     memoryDict[dataset][orf]["cat"] + "," + dataset + "," + orf + "," + hmm + "," +
+                                     memoryDict[dataset][orf]["bit"] + "," +
+                                     memoryDict[dataset][orf]["cutoff"] + "," + memoryDict[dataset][orf]["clu"] + "," +
+-                                    memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] +
++                                    memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] + "," +
+                                     memoryDict[dataset][orf]["blastEval"] + "," +
+                                     memoryDict[dataset][orf]["seq"] + "\n")
+                             else:
+@@ -2218,7 +2217,7 @@
+                                 memoryDict[dataset][orf]["cat"] + "," + dataset + "," + orf + "," + hmm + "," +
+                                 memoryDict[dataset][orf]["bit"] + "," +
+                                 memoryDict[dataset][orf]["cutoff"] + "," + memoryDict[dataset][orf]["clu"] + "," +
+-                                memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] +
++                                memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] + "," +
+                                 memoryDict[dataset][orf]["blastEval"] + "," +
+                                 memoryDict[dataset][orf]["seq"] + "\n")
+                         else:
+@@ -2308,7 +2307,7 @@
+                             memoryDict[dataset][orf]["cat"] + "," + dataset + "," + orf + "," + hmm + "," +
+                             memoryDict[dataset][orf]["bit"] + "," +
+                             memoryDict[dataset][orf]["cutoff"] + "," + memoryDict[dataset][orf]["clu"] + "," +
+-                            memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] +
++                            memoryDict[dataset][orf]["heme"] + "," + memoryDict[dataset][orf]["blastHit"] + "," +
+                             memoryDict[dataset][orf]["blastEval"] + "," +
+                             memoryDict[dataset][orf]["seq"] + "\n")
+                     else:
+@@ -2391,7 +2390,7 @@
+                             hemeb = len(re.findall(r'G(.)[HR](.)C[PLAV]G', seq))
+                             hbm = len(re.findall(r'[STC][AVILMFYWH][ST]P[ST]', seq))
+                             out.write(
+-                                ls[0] + "," + ls[1] + "," + str(idxDict[ls[2]]) + "," + ls[3] + "," + ls[4] + "," + ls[
++                                ls[0] + "," + ls[1] + "," + ls[2] + "," + ls[3] + "," + ls[4] + "," + ls[
+                                     5] + "," + ls[6] + "," + ls[7] + "," + str(hemeb) + "," + str(hbm) + "," + ls[
+                                     8] + "," + ls[9] + "," + ls[10] + "\n")
+                         out.write(
+@@ -2593,7 +2592,9 @@
+ 
+                 try:
+                     print("processing... " + cell)
+-                    depth = open("%s/contigDepths/%s.depth" % (args.out, cell))
++                    # original depth file location
++                    # depth = open("%s/contigDepths/%s.depth" % (args.out, cell))
++                    depth = open("./%s.depth.txt" % (cell))
+                     total = 0
+                     for k in depth:
+                         LS = k.rstrip().split("\t")
+@@ -2900,7 +2901,9 @@
+ 
+                 try:
+                     print("processing... " + cell)
+-                    depth = open("%s/contigDepths/%s.depth" % (args.out, cell))
++                    # original depth file location
++                    # depth = open("%s/contigDepths/%s.depth" % (args.out, cell))
++                    depth = open("./%s.depth.txt" % (cell))
+                     total = 0
+                     for k in depth:
+                         LS = k.rstrip().split("\t")
