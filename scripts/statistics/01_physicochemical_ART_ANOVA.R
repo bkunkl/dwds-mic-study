@@ -40,6 +40,8 @@
 #     conductivity,ph}.csv
 #       one tidy CSV per endpoint (14 files); response variable in the first
 #       column. See data/physicochemical/README.md.
+#   data/physicochemical/ph_day0.csv
+#       pH with the Day-0 -nutri DW reference measurement, for section 8b.
 #
 # OUTPUT (into results/statistics/physicochemical/)
 #   Supplementary_Data_physchem.xlsx        individual data + summaries
@@ -50,6 +52,7 @@
 #   model_diagnostics_35d/<endpoint>_diagnostics.pdf
 #   <endpoint>/<endpoint>_ART_ANOVA_tables.xlsx   per-endpoint workbook
 #   ART_ANOVA_random-effects_VarCorr.xlsx
+#   pH_Day0_ART_ANOVA.xlsx                  pH Day-0 reference contrast
 #   ART_ANOVA_Executive_Summaries_FDR.xlsx
 #   Figure2_3_p_values.xlsx
 # OUTPUT (into results/figures/)
@@ -151,6 +154,27 @@ df_list <- lapply(df_list, function(d) {
                                  "+nutri" = "Nutri+")
     )
 })
+
+# pH with the Day-0 reference (section 8b). Per batch: one pre-incubation,
+# buffer-free measurement of -nutri DW (Time "0d"), plus the end-of-incubation
+# C +nutri, DW -nutri and DW +nutri rows, which are the same values as in
+# ph.csv. C -nutri is not part of this design.
+pH_d0_df <- read.csv(file.path(physchem_dir, "ph_day0.csv"), stringsAsFactors = FALSE,
+                     check.names = FALSE, fileEncoding = "UTF-8") %>%
+  dplyr::transmute(
+    pH,
+    Sterilization = factor(Sterilization, levels = c("Ctrl", "DW")),
+    Nutrient      = factor(Nutrient,      levels = c("Nutri-", "Nutri+")),
+    Time          = factor(Time,          levels = c("0d", "35d", "60d")),
+    Batch         = factor(Batch,         levels = c("#1", "#2", "#3"))
+  ) %>%
+  dplyr::mutate(
+    Sterilization = fct_recode(Sterilization, "C" = "Ctrl"),
+    Nutrient      = fct_recode(Nutrient, "-nutri" = "Nutri-", "+nutri" = "Nutri+"),
+    Stage         = factor(ifelse(Time == "0d", "Day0", "End"), levels = c("Day0", "End"))
+  )
+
+stopifnot(nrow(pH_d0_df) == 30L, sum(pH_d0_df$Stage == "Day0") == 3L)
 
 boxplot_ylabs <- list(`Redox potential` = "Redox potential (mV)",
                       `Dissolved oxygen` = "Dissolved oxygen (mg/L)",
@@ -957,6 +981,87 @@ for (i in seq_along(df_list)) {
 }
 
 # ------------------------------------------------------------------------ #
+# 8b. pH only: Day-0 referenced contrast for -nutri DW
+# ------------------------------------------------------------------------ #
+# pH can shift simply from the autoclave procedure itself, so the standard
+# "(C,-nutri) - (DW,-nutri)" contrast (autoclaved vs. raw drinking water,
+# both without nutrients) confounds a sterilization-induced pH shift with
+# any biological effect. For pH only, that cell is replaced by a contrast
+# that IS interpretable: the single Day-0 reference measurement of -nutri DW
+# (buffer-free, pre-incubation, one measurement per batch) vs. the -nutri DW
+# samples at the end of incubation (35 d or 60 d, 3 replicates per batch).
+# The +nutri samples keep the ordinary "(C,+nutri) - (DW,+nutri)" comparison
+# (computed in the main loop, Parameter == "pH"), because the M9 buffer keeps
+# pH stable regardless of sterilization. For every other endpoint the
+# sterilized samples are compared with the non-sterilized controls, as
+# described in the methods.
+#
+# To stay inside the same statistical framework used for every other
+# endpoint x contrast cell (per-batch ART -> Fisher-combined p -> Fisher-z
+# meta-analytic r -> one flat BH correction across the whole family), the
+# Day-0 contrast goes through that identical per-batch ART + Fisher/meta-r
+# pipeline, restricted to the DW -nutri cells. Each batch contributes
+# n = 4 (1 Day-0 + 3 end-of-incubation).
+cat("8b) pH: Day-0 referenced contrast for -nutri DW, per-batch ART + Fisher/meta-r ...\n")
+
+pH_day0_contrast_label <- "(DW,-nutri,Day0) - (DW,-nutri)"
+pH_invalid_contrast    <- "(C,-nutri) - (DW,-nutri)"
+
+pH_d0_dw_nutri <- pH_d0_df %>%
+  dplyr::filter(Sterilization == "DW", Nutrient == "-nutri") %>%
+  droplevels()
+
+pH_d0_by_batch <- list()
+pH_d0_anova_by_batch <- list()
+for (b in levels(pH_d0_dw_nutri$Batch)) {
+  db <- subset(pH_d0_dw_nutri, Batch == b)
+  mB_pH_d0 <- art(pH ~ Stage, data = db)
+
+  pH_d0_anova_by_batch[[b]] <- as.data.frame(anova(mB_pH_d0)) %>%
+    dplyr::mutate(Batch = b, .before = 1)
+
+  con_pH_d0 <- contrastArtTable(mB_pH_d0, contrast = "Stage")
+  con_pH_d0$contrast <- pH_day0_contrast_label   # "(Day0) - (End)" -> full label
+  con_pH_d0$Batch    <- b
+  con_pH_d0$n_obs    <- nrow(db)
+  pH_d0_by_batch[[b]] <- con_pH_d0
+}
+
+pH_d0_long <- dplyr::bind_rows(pH_d0_by_batch) %>%
+  dplyr::select(Batch, contrast, estimate, SE, df, t.ratio, p.value, r_effect, n_obs)
+
+pH_d0_synth <- pH_d0_long %>%
+  dplyr::group_by(contrast) %>%
+  dplyr::summarise(
+    k        = dplyr::n(),
+    p_Fisher = fisher_combine_metap(p.value),
+    .meta    = list(meta_r_metafor(r_effect, n = n_obs, model = "FE")),
+    .groups  = "drop") %>%
+  tidyr::unnest_wider(.meta, names_sep = "_") %>%
+  dplyr::rename(r_meta = .meta_r, z_meta = .meta_z, se_z = .meta_se, ci95_r = .meta_ci95) %>%
+  dplyr::mutate(Parameter = "pH", .before = 1)
+
+# descriptive statistics for the Day-0 reference itself (one per batch)
+pH_day0_descriptives <- pH_d0_df %>%
+  dplyr::filter(Stage == "Day0") %>%
+  dplyr::summarise(
+    n         = dplyr::n(),
+    median_pH = median(pH),
+    min_pH    = min(pH),
+    max_pH    = max(pH)) %>%
+  dplyr::mutate(range_pH = paste0(min_pH, "–", max_pH))
+
+write_xlsx(
+  list(
+    Batch_ART_ANOVA   = dplyr::bind_rows(pH_d0_anova_by_batch),
+    Batch_contrasts   = pH_d0_long,
+    Fisher_combined   = pH_d0_synth,
+    Day0_descriptives = pH_day0_descriptives
+  ),
+  file.path(base_path, "pH_Day0_ART_ANOVA.xlsx")
+)
+                     
+# ------------------------------------------------------------------------ #
 # 9. Binding: executive tables across all endpoints
 # ------------------------------------------------------------------------ #
 
@@ -1040,10 +1145,22 @@ wanted_contrasts <- c(
   "(C,+nutri) - (DW,+nutri)"
 )
 
+# pH: the Day-0 contrast (section 8b) takes the place of the C vs DW -nutri
+# contrast. It is put in that contrast's column so the matrices keep their
+# 14 x 4 shape; `cell_note` and the dagger in Fig. S2 mark the cell.
+pH_d0_synth_swapped <- pH_d0_synth %>%
+  dplyr::transmute(Parameter, contrast = pH_invalid_contrast, p_Fisher, r_meta)
+
 syn_all <- syn_all %>%
   dplyr::filter(contrast %in% wanted_contrasts) %>%
-  # one BH adjustment across 14 endpoints x 4 contrasts
-  dplyr::mutate(q_BH = p.adjust(p_Fisher, method = "BH"))
+  dplyr::filter(!(Parameter == "pH" & contrast == pH_invalid_contrast)) %>%
+  dplyr::bind_rows(pH_d0_synth_swapped) %>%
+  dplyr::mutate(
+    # one BH adjustment across 14 endpoints x 4 contrasts, still 56 tests
+    q_BH = p.adjust(p_Fisher, method = "BH"),
+    cell_note = dplyr::if_else(Parameter == "pH" & contrast == pH_invalid_contrast,
+                               "pH: (DW,-nutri) day 0 - end of incubation, not C vs DW",
+                               NA_character_))
 
 syn_p_mat <- syn_all %>% select(Parameter, contrast, p_Fisher) %>%
   tidyr::pivot_wider(names_from = contrast, values_from = p_Fisher)  # kept for transparency
@@ -1053,10 +1170,12 @@ syn_r_mat <- syn_all %>% select(Parameter, contrast, r_meta) %>%
   tidyr::pivot_wider(names_from = contrast, values_from = r_meta)
 
 # Fig. 2 annotations -- treatment comparisons
+# (pH's "(C,-nutri) - (DW,-nutri)" row is the Day-0 referenced one, flagged)
 fig2_stats <- syn_all %>%
   dplyr::filter(Parameter %in% c("ORP", "DO", "SO4", "pH", "Mn", "NO2", "NO3"),
                 contrast %in% wanted_contrasts[3:4]) %>%
-  dplyr::mutate(signif = sig_code(q_BH))
+  dplyr::mutate(signif = sig_code(q_BH),
+                flag   = dplyr::if_else(!is.na(cell_note), "†", ""))
 
 # Fig. 3 annotations -- iron speciation, within incubation duration
 long_all <- dplyr::bind_rows(long_all_list)
@@ -1344,7 +1463,7 @@ make_dual_anova_heatmap <- function(p_wide, eta_wide,
   eta_long <- eta_wide %>% pivot_longer(-Parameter, names_to = "Term", values_to = "eta2")
 
   dat <- left_join(p_long, eta_long, by = c("Parameter","Term")) %>%
-    mutate(sig = p < alpha)
+    mutate(sig = !is.na(p) & p < alpha)   # NA-safe: NA p would give fontface NA
 
   if (!is.null(term_order)) dat$Term <- factor(dat$Term, levels = term_order)
 
@@ -1423,14 +1542,36 @@ make_dual_anova_heatmap <- function(p_wide, eta_wide,
 }
 
 # ---- Fisher-combined synthesis heatmap: rows = endpoints, cols = contrasts ---- #
+# Selected cells (here: pH x "(C,-nutri) - (DW,-nutri)", which holds the Day-0
+# referenced contrast of section 8b) get `flag_symbol` appended to the q value
+# printed in the tile; with flag_r = TRUE also to the r value. Axis and column
+# labels stay unchanged.
+#   flag_cells  data.frame with columns RowID and ColID, using the RAW names as
+#               in q_wide, e.g. data.frame(RowID = "pH", ColID = "(C,-nutri) - (DW,-nutri)")
 make_Fisher_combined_contrast_heatmap_dual <- function(q_wide, r_wide,
                                                        row_id = "Parameter",
                                                        title  = "Contrasts across parameters — Fisher qBH",
                                                        alpha  = 0.05,
                                                        abbrev = TRUE,
                                                        row_order = NULL,
-                                                       row_labels = NULL) {
+                                                       row_labels = NULL,
+                                                       flag_cells  = NULL,
+                                                       flag_symbol = "†",
+                                                       flag_r      = FALSE) {
   stopifnot(row_id %in% names(q_wide), row_id %in% names(r_wide))
+
+  if (!is.null(flag_cells)) {
+    flag_cells <- as.data.frame(flag_cells)
+    stopifnot(all(c("RowID", "ColID") %in% names(flag_cells)))
+    # fail loudly on typos in the row / contrast name
+    miss <- flag_cells[!(flag_cells$ColID %in% names(q_wide)) |
+                         !(flag_cells$RowID %in% q_wide[[row_id]]), , drop = FALSE]
+    if (nrow(miss) > 0) {
+      stop("flag_cells refers to cells that are not in q_wide: ",
+           paste(miss$RowID, "/", miss$ColID, collapse = "; "))
+    }
+  }
+  flag_key <- if (is.null(flag_cells)) character(0) else paste(flag_cells$RowID, flag_cells$ColID, sep = "||")
 
   q_long <- q_wide %>% dplyr::rename(RowID = !!row_id) %>%
     tidyr::pivot_longer(-RowID, names_to = "ColID", values_to = "q")
@@ -1442,7 +1583,8 @@ make_Fisher_combined_contrast_heatmap_dual <- function(q_wide, r_wide,
       # enforce numeric types for plotting
       q = suppressWarnings(as.numeric(q)),
       r = suppressWarnings(as.numeric(r)),
-      sig = q < alpha)
+      flag = paste(RowID, ColID, sep = "||") %in% flag_key,
+      sig = !is.na(q) & q < alpha)
 
   # Both sides of a treatment contrast differ here, so unlike
   # abbreviate_contrast() the right-hand side is kept -- only the parentheses
@@ -1455,10 +1597,14 @@ make_Fisher_combined_contrast_heatmap_dual <- function(q_wide, r_wide,
         stringr::str_replace_all("\\s-\\s", "  −  ")
     } else ColID)
 
+  # the marker goes only into the flagged tile's label
   p_block <- dat %>% mutate(xlab = paste0("q: ", ColID_clean),
                             q_lab = format_q10(q, sig_digits = 2, sci_threshold = 1e-3,
-                                               style = "threshold"))
-  r_block <- dat %>% mutate(xlab = paste0("r: ", ColID_clean))
+                                               style = "threshold"),
+                            q_lab = ifelse(flag, paste0(q_lab, flag_symbol), q_lab))
+  r_block <- dat %>% mutate(xlab = paste0("r: ", ColID_clean),
+                            r_lab = ifelse(is.na(r), "", sprintf("%.2f", r)),
+                            r_lab = ifelse(flag & flag_r, paste0(r_lab, flag_symbol), r_lab))
   x_levels <- c(unique(p_block$xlab), unique(r_block$xlab))
 
   if (!is.null(row_order)) {
@@ -1473,12 +1619,13 @@ make_Fisher_combined_contrast_heatmap_dual <- function(q_wide, r_wide,
               color = "grey40", linewidth = 0.25) +
     geom_text(data = p_block,
               aes(x = factor(xlab, levels = x_levels), y = RowID, label = q_lab,
-                  colour = ifelse(q < alpha, "white", "black"),
+                  colour = ifelse(sig, "white", "black"),
                   fontface = ifelse(sig, "bold", "plain")),
               size = 3, show.legend = FALSE) +
     scale_colour_identity() +
     scale_fill_gradient(name = "q (Fisher adj. p)", low = "#27335A", high = "white",
                         limits = c(0, 1), oob = scales::squish,
+                        na.value = "grey90",
                         labels = label_drop0(digits = 2),
                         guide = guide_colourbar(order = 1)) +
     ggnewscale::new_scale_fill() +
@@ -1488,6 +1635,7 @@ make_Fisher_combined_contrast_heatmap_dual <- function(q_wide, r_wide,
               color = "white", linewidth = 0.25) +
     scale_fill_gradient(name = "|r| (ns)", low = "#F0F0F0", high = "#9E9E9E",
                         limits = c(0,1), breaks = seq(0, 1, by = 0.25),
+                        na.value = "grey90",
                         labels = label_drop0(digits = 2),
                         guide = guide_colourbar(order = 3)) +
     ggnewscale::new_scale_fill() +
@@ -1497,7 +1645,7 @@ make_Fisher_combined_contrast_heatmap_dual <- function(q_wide, r_wide,
               color = "white", linewidth = 0.1) +
     geom_text(data = r_block,
               aes(x = factor(xlab, levels = x_levels), y = RowID,
-                  label = ifelse(is.na(r), "", sprintf("%.2f", r)),
+                  label = r_lab,
                   fontface = ifelse(sig, "bold", "plain")),
               size = 3) +
     scale_fill_gradient2(name = "r (sig)", low = "#2C7BB6", mid = "white", high = "#D7191C",
@@ -1508,7 +1656,7 @@ make_Fisher_combined_contrast_heatmap_dual <- function(q_wide, r_wide,
     theme_minimal(base_size = 11) +
     scale_y_discrete(labels = function(x) {
       if (is.null(row_labels)) return(x)
-      out <- row_labels[x]
+      out <- unname(row_labels[x])
       out[is.na(out)] <- x[is.na(out)]
       out
     }) +
@@ -1629,6 +1777,9 @@ h_syn <- make_Fisher_combined_contrast_heatmap_dual(
   abbrev = TRUE,
   row_order = row_labels_order,
   row_labels = proper_labels_unicode
+  # pH: the Day-0 referenced contrast sits in this cell (section 8b)
+  flag_cells = data.frame(RowID = "pH", ColID = pH_invalid_contrast),
+  flag_r = TRUE
 )
 ggsave(file.path(fig_dir, "FigS2_heatmap_treatment_contrasts.png"),
        h_syn$plot, width = 8, height = 8, dpi = 300)
