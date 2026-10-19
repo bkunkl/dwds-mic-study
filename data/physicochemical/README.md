@@ -4,8 +4,9 @@ One tidy CSV per endpoint, long format: one row per measurement. These are the
 bulk-water physicochemical measurements taken at the end of each incubation.
 
 `scripts/statistics/01_physicochemical_ART_ANOVA.R` reads the 14 endpoint files listed
-below. Two further datasets from the same experiments live here as well and are
-described at the end of this file: `corrosion_rate.csv`
+below, plus `ph_day0.csv`, the pH Day-0 reference described further down. Two further
+datasets from the same experiments live here as well and are described at the end of
+this file: `corrosion_rate.csv`
 (`scripts/statistics/02_corrosion_rate_statistics.R`) and `surface_roughness.csv`
 (`scripts/statistics/03_surface_roughness_statistics.R`).
 Every value in these files was verified against the source measurement record.
@@ -27,9 +28,9 @@ Every value in these files was verified against the source measurement record.
 | chloride.csv         | Cl           | Chloride                | mg/L          | 36 | #1 #2 #3    |
 | turbidity.csv        | Turbidity    | Turbidity               | NTU           | 36 | #1 #2 #3    |
 | conductivity.csv     | Conductivity | Electrical conductivity | uS/cm         | 36 | #1 #2 #3    |
-| ph.csv               | pH           | pH                      | dimensionless | 36 | #1 #2 #3    |
+| ph.csv               | pH           | pH                      | dimensionless | 30 | #1 #2 #3    |
 
-14 endpoints, 480 observations in total.
+14 endpoints, 474 observations in total.
 
 ## Columns
 
@@ -68,15 +69,41 @@ rows for those two endpoints, and no E1-vs-E3 batch comparison for them.
 
 ## Provenance and known issues
 
-- Conductivity for the E2 `+nutri` samples was corrected by a factor of 1000
-  relative to earlier versions of the analysis script; the corrected values are
-  the ones in `conductivity.csv`.
 - The unit for total hardness is given as `mg/L as CaCO3` here, matching the
   supplementary data workbook the analysis script writes. Note that the source
   script also carried a second, less specific unit lookup (`mg/L`) that was the
   one in effect for the descriptive-statistics figure's facet strips.
 
 ---
+
+## `ph_day0.csv` — 30 rows
+
+pH with a pre-incubation reference measurement. Read by
+`scripts/statistics/01_physicochemical_ART_ANOVA.R`, section 8b, for one contrast only.
+
+Autoclaving can itself shift the pH of a solution, so for pH the
+`(C,-nutri) - (DW,-nutri)` contrast used for every other endpoint mixes a
+sterilization-induced shift with any biological effect. For pH that contrast is
+replaced by Day 0 vs. end of incubation within `DW` / `Nutri-`. The `Nutri+`
+samples keep the ordinary C vs. DW comparison, because the M9 buffer keeps pH
+stable regardless of sterilization.
+
+Same six columns as the endpoint files, with one extra `Time` level:
+
+| Column          | Values                     |
+|-----------------|----------------------------|
+| `pH`            | numeric                    |
+| `Sterilization` | `Ctrl`, `DW`               |
+| `Nutrient`      | `Nutri-`, `Nutri+`         |
+| `Time`          | `0d`, `35d`, `60d`         |
+| `Batch`         | `#1`, `#2`, `#3`           |
+| `Replicate`     | `1`, `2`, `3`              |
+
+Per batch, 10 rows: one `0d` measurement of `DW` / `Nutri-` (buffer-free, before
+incubation), then three replicates each of `Ctrl` / `Nutri+`, `DW` / `Nutri-` and
+`DW` / `Nutri+` at the end of incubation. The end-of-incubation rows are the same
+values as in `ph.csv`; `Ctrl` / `Nutri-` is not part of this file. The analysis
+uses only the `DW` / `Nutri-` rows (n = 4 per batch).
 
 ## `corrosion_rate.csv` — 21 rows
 
