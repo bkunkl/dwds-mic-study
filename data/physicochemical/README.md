@@ -28,9 +28,9 @@ Every value in these files was verified against the source measurement record.
 | chloride.csv         | Cl           | Chloride                | mg/L          | 36 | #1 #2 #3    |
 | turbidity.csv        | Turbidity    | Turbidity               | NTU           | 36 | #1 #2 #3    |
 | conductivity.csv     | Conductivity | Electrical conductivity | uS/cm         | 36 | #1 #2 #3    |
-| ph.csv               | pH           | pH                      | dimensionless | 30 | #1 #2 #3    |
+| ph.csv               | pH           | pH                      | dimensionless | 36 | #1 #2 #3    |
 
-14 endpoints, 474 observations in total.
+14 endpoints, 480 observations in total.
 
 ## Columns
 
