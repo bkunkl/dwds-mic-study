@@ -10,7 +10,7 @@ systems (DWDS), combining multiple lines of evidence (MLOE):
 The repository holds the scripts that produced the manuscript's figures and statistics, the
 container recipes for the tools they call, the physicochemical and material data as tidy CSVs, and
 the sample metadata. It does not hold the sequencing reads (see
-[Data availability](#data-availability)) or the built container images.
+[Data availability](#data-availability)), the BAM alignment files generated from them, or the built container images.
 
 The pipeline spans a cluster and a workstation, and the order matters: see
 [Running the analysis](#running-the-analysis-end-to-end) and
@@ -35,8 +35,7 @@ water filtered, DNA-isolated and sequenced before incubation. E1 and E2 have no 
 | E2 | 60 d | 4 | no |
 | E3 | 35 d | 5 | yes (`E3_S27_base-water`) |
 
-**13 metagenome samples in total.** In the metadata and in the R scripts the three experiments
-appear as `pilot1` / `pilot2` / `pilot3` (E1 / E2 / E3), shown in the figures as #1 / #2 / #3.
+**13 metagenome samples in total.** The figures show the three experiments as #1 / #2 / #3.
 
 The physicochemical and material-degradation measurements come from the same three experiments and
 have their own replication: three replicate bottles per treatment cell for the physicochemical
@@ -48,15 +47,18 @@ endpoints, 21 coupons for corrosion rate, 156 profilometry measurements for surf
 Raw sequencing reads are deposited at the NCBI Sequence Read Archive under BioProject accession
 **[PRJNA1480046](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1480046)**.
 
-**The dataset is not yet public** -- release is pending manuscript review. `data/raw_reads/`
-contains 26 **0-byte placeholder files** (13 samples x R1/R2) showing the expected filenames and
-layout. Once the accession is released, download the reads with `prefetch` + `fasterq-dump`
+The sequencing dataset is scheduled for public release upon publication of the associated article. 
+`data/raw_reads/` contains 26 **0-byte placeholder files** (13 samples x R1/R2) showing the expected filenames and
+layout. Download the reads with `prefetch` + `fasterq-dump`
 (sra-tools) or from the ENA mirror into that directory under the same names; nothing else needs
 changing. See `data/raw_reads/README.md` for the filename convention.
 
 Everything else the analysis needs, apart from the reference databases and the container images, is
 in this repository. The physicochemical, corrosion-rate and surface-roughness data are included as
-CSVs, so `scripts/statistics/` can be run directly after cloning.
+CSVs, so `scripts/statistics/` can be run directly after cloning. The intermediate files the figure
+scripts read -- the phyloseq object, the merged iNEXT results, the contig depth tables and the
+FeGenie output -- are shipped in `results/` (see `results/README.md`), so `scripts/figures/` can be
+run directly after cloning as well.
 
 ## Repository layout
 
@@ -77,7 +79,8 @@ CSVs, so `scripts/statistics/` can be run directly after cloning.
 │   ├── metadata/        sample sheet, Kraken2/Bracken metadata, curated SOB/SRB genus lists
 │   ├── kraken2/         per-sample Kraken2 classification rates
 │   └── physicochemical/ tidy CSVs: 14 water endpoints, corrosion rate, surface roughness
-└── results/             all output lands here; gitignored except .gitkeep
+└── results/             all output lands here; untracked, except the intermediate files the
+                         figure scripts read (results/README.md)
 ```
 
 Directories with details of their own carry a README, linked from here rather than repeated:
@@ -85,7 +88,7 @@ Directories with details of their own carry a README, linked from here rather th
 [`scripts/local/fegenie/`](scripts/local/fegenie/README.md),
 [`data/metadata/`](data/metadata/README.md), [`data/raw_reads/`](data/raw_reads/README.md),
 [`data/kraken2/`](data/kraken2/README.md),
-[`data/physicochemical/`](data/physicochemical/README.md),
+[`data/physicochemical/`](data/physicochemical/README.md), [`results/`](results/README.md),
 [`reference/DATABASES.md`](reference/DATABASES.md).
 
 ## Which scripts run where
@@ -99,6 +102,45 @@ Run everything from the repository root unless a script's header says otherwise 
 `scripts/local/04` and `scripts/local/05` run from the `results/` subdirectory their inputs were
 written to. Paths resolve relative to the working directory (`REPO_ROOT="$(pwd)"` in the shell
 scripts, plain relative paths in the R scripts).
+
+## Redrawing the figures and statistics only
+
+The pipeline's intermediate files are shipped in `results/` (see `results/README.md`), so every
+script in `scripts/figures/` and `scripts/statistics/` runs on a fresh clone -- no reads, databases,
+containers or cluster needed. Install the R packages below, then run any of them from the
+repository root, e.g.
+
+```
+Rscript scripts/figures/Fig9_fegenie_iron_genes.R
+```
+
+That includes `scripts/figures/Fig6_FigS5-S8_alpha_diversity.R` top to bottom: its stage 1 needs
+only the phyloseq object and its stage 2 the merged diversity profiles, both shipped (see
+[Part 3](#part-3----alpha-diversity) for why the script has two stages).
+
+### R packages
+
+The figure and statistics scripts need R (developed under 4.5.1) and these packages:
+
+```r
+install.packages("BiocManager")
+BiocManager::install(c(
+  # Bioconductor
+  "phyloseq", "ComplexHeatmap", "metagenomeSeq", "microbiome",
+  # CRAN
+  "tidyverse", "ggrepel", "gridExtra", "effectsize", "multcomp", "broom", "pals", "scales",
+  "ggpubr", "cowplot", "ggthemes", "circlize", "reshape2", "paletteer", "palettetown", "iNEXT",
+  "ARTool", "car", "emmeans", "metap", "metafor", "lme4", "MuMIn", "ggnewscale", "writexl",
+  "openxlsx"
+))
+install.packages("microViz",
+                 repos = c("https://david-barnett.r-universe.dev", "https://cloud.r-project.org"))
+```
+
+`BiocManager::install()` installs the CRAN packages too; `microbiome` is there because `microViz`
+needs it. On Linux, `metap` needs the FFTW
+library (`libfftw3-dev` on Debian/Ubuntu). The versions used for the manuscript are listed in
+[`containers/README.md`](containers/README.md); `containers/r_inext.def` pins most of them.
 
 ## Prerequisites
 
@@ -116,7 +158,7 @@ scripts, plain relative paths in the R scripts).
    **nr is optional.** It is used only for FeGenie's `-ref` validation pass, which
    `scripts/local/03_run_fegenie.sh` makes opt-in through its `NR_DB` variable (empty = skip, the
    default). Skipping it still produces the core annotation and `FeGenie-heatmap-data.csv`, which
-   is what Fig. 8 needs.
+   is what Fig. 9 needs.
 3. **Clone the two external script collections** used by
    `scripts/local/01_build_phyloseq_object.sh` --
    [KrakenTools](https://github.com/jenniferlu717/KrakenTools) and
@@ -142,7 +184,7 @@ sbatch scripts/hpc/02_kraken2_bracken.sbatch             # cluster
 assembles with MEGAHIT, renames contigs, maps reads back and computes contig depths with
 `jgi_summarize_bam_contig_depths`. It produces two trimmed read sets per sample: **>= 140 bp** for
 taxonomic profiling and **>= 100 bp** for assembly. `scripts/hpc/02` runs Kraken2 at confidence
-**0.1** (Lu & Salzberg 2022) and Bracken (species level, read length 150) on the 140 bp set.
+**0.1** (Szóstak et al. 2022) and Bracken (species level, read length 150) on the 140 bp set.
 `scripts/local/01` combines the per-sample output into the phyloseq object every downstream R
 script reads, `results/kraken_bracken/brackenSpecies_conf01.rds`.
 
@@ -160,7 +202,7 @@ script reads, `results/kraken_bracken/brackenSpecies_conf01.rds`.
 ### Part 3 -- alpha diversity
 
 One script is split around the cluster jobs.
-`scripts/figures/Fig5_FigS5-S8_alpha_diversity.R` marks the split with banner comments:
+`scripts/figures/Fig6_FigS5-S8_alpha_diversity.R` marks the split with banner comments:
 
 ```
 #  STAGE 1 -- RUNS BEFORE THE HPC JOBS
@@ -170,10 +212,10 @@ One script is split around the cluster jobs.
 
 In order:
 
-1. **Stage 1** of `scripts/figures/Fig5_FigS5-S8_alpha_diversity.R` (workstation) -- from the top
+1. **Stage 1** of `scripts/figures/Fig6_FigS5-S8_alpha_diversity.R` (workstation) -- from the top
    down to the `STOP HERE` banner. Needs only the phyloseq object. Writes
-   `results/inext_rarefaction/pilot123_diversity.RData` and
-   `results/pilot123_diversity_metadata_table.rds`, read by the cluster jobs and the merge scripts.
+   `results/inext_rarefaction/otu_matrix_prok.rds` and
+   `results/diversity_metadata_table.rds`, read by the cluster jobs and the merge scripts.
 2. `sbatch --export=Q_VALUE=0 scripts/hpc/03_inext_rarefaction_array.sbatch`, and the same for
    `Q_VALUE=1` and `Q_VALUE=2` (cluster) -- 13 samples x 3 q values = **39 jobs**.
 3. `./scripts/hpc/04_submit_diversity_profile_jobs.sh <q>` (cluster), once per q value in the sweep
@@ -182,8 +224,8 @@ In order:
    `results/inext_rarefaction/`.
 5. `scripts/local/05_merge_diversity_profiles.R` (workstation), once, run from
    `results/diversity_profile/`, after the sweep has finished.
-6. **Stage 2** of `scripts/figures/Fig5_FigS5-S8_alpha_diversity.R` (workstation) -- everything
-   below the `STAGE 2` banner. Produces Fig. 5 and Figs. S5-S8. It depends on no object created in
+6. **Stage 2** of `scripts/figures/Fig6_FigS5-S8_alpha_diversity.R` (workstation) -- everything
+   below the `STAGE 2` banner. Produces Fig. 6 and Figs. S5-S8. It depends on no object created in
    stage 1 and can be run on its own in a fresh session after the library/path block at the top.
    Besides the merged profiles from step 5 it reads
    `data/kraken2/kraken2_classification_rates.csv`.
@@ -196,9 +238,9 @@ No ordering constraints among these; each needs only what its header lists.
 
 | Script | Needs |
 |---|---|
-| `scripts/figures/Fig6_FigS9_taxonomic_composition.R` | the phyloseq object (part 1) |
-| `scripts/figures/Fig7_sulfur_bacteria_heatmap.R` | the phyloseq object (part 1) + the curated SOB/SRB genus lists in `data/metadata/` |
-| `scripts/figures/Fig8_fegenie_iron_genes.R` | contig depth files (part 1) + FeGenie output (part 2) |
+| `scripts/figures/Fig7_FigS9_taxonomic_composition.R` | the phyloseq object (part 1) |
+| `scripts/figures/Fig8_sulfur_bacteria_heatmap.R` | the phyloseq object (part 1) + the curated SOB/SRB genus lists in `data/metadata/` |
+| `scripts/figures/Fig9_fegenie_iron_genes.R` | contig depth files (part 1) + FeGenie output (part 2) |
 | `scripts/figures/FigS4_rarefaction_sample_coverage.R` | the merged iNEXT objects from part 3, step 4 |
 | `scripts/statistics/01_physicochemical_ART_ANOVA.R` | `data/physicochemical/` only |
 | `scripts/statistics/02_corrosion_rate_statistics.R` | `data/physicochemical/corrosion_rate.csv` |
@@ -229,21 +271,21 @@ the ~200 GB Kraken2 database in page cache; `vmtouch` preloads it.
 
 | Figure | Output file | Produced by |
 |---|---|---|
-| Fig. 5 | `Fig5_alpha_diversity_metrics.png` | `scripts/figures/Fig5_FigS5-S8_alpha_diversity.R` |
-| Fig. 6 | `Fig6_PCA_and_iris_paired_plot_top_species.png` | `scripts/figures/Fig6_FigS9_taxonomic_composition.R` |
-| Fig. 7 | `Fig7_complexHeatmap_sulfur_bacteria.png` | `scripts/figures/Fig7_sulfur_bacteria_heatmap.R` |
-| Fig. 8 | `Fig8_FeGenie_iron_related_functional_gene_categories.png` | `scripts/figures/Fig8_fegenie_iron_genes.R` |
+| Fig. 6 | `Fig6_alpha_diversity_metrics.png` | `scripts/figures/Fig6_FigS5-S8_alpha_diversity.R` |
+| Fig. 7 | `Fig7_PCA_and_iris_paired_plot_top_species.png` | `scripts/figures/Fig7_FigS9_taxonomic_composition.R` |
+| Fig. 8 | `Fig8_complexHeatmap_sulfur_bacteria.png` | `scripts/figures/Fig8_sulfur_bacteria_heatmap.R` |
+| Fig. 9 | `Fig9_FeGenie_iron_related_functional_gene_categories.png` | `scripts/figures/Fig9_fegenie_iron_genes.R` |
 | Fig. S2 | `FigS2_heatmap_treatment_contrasts.png` | `scripts/statistics/01_physicochemical_ART_ANOVA.R` |
 | Fig. S3 | `FigS3_heatmap_Batch-pair_comparisons.png` | `scripts/statistics/01_physicochemical_ART_ANOVA.R` |
 | Fig. S4 | `FigS4_type2_sample_coverage.png` | `scripts/figures/FigS4_rarefaction_sample_coverage.R` |
-| Fig. S5 | `FigS5_model_coefficients_across_alpha_diversity_metrics.png` | `scripts/figures/Fig5_FigS5-S8_alpha_diversity.R` |
-| Fig. S6 | `FigS6_standardized_treatment_contrasts_cohens_d.png` | `scripts/figures/Fig5_FigS5-S8_alpha_diversity.R` |
-| Fig. S7 | `FigS7_alpha_diversity_profile.png` | `scripts/figures/Fig5_FigS5-S8_alpha_diversity.R` |
-| Fig. S8 | `FigS8_alpha_diversity_profile_derivative.png` | `scripts/figures/Fig5_FigS5-S8_alpha_diversity.R` |
-| Fig. S9 | `FigS9_top80_pct_genera_distribution.png` | `scripts/figures/Fig6_FigS9_taxonomic_composition.R` |
+| Fig. S5 | `FigS5_model_coefficients_across_alpha_diversity_metrics.png` | `scripts/figures/Fig6_FigS5-S8_alpha_diversity.R` |
+| Fig. S6 | `FigS6_standardized_treatment_contrasts_cohens_d.png` | `scripts/figures/Fig6_FigS5-S8_alpha_diversity.R` |
+| Fig. S7 | `FigS7_alpha_diversity_profile.png` | `scripts/figures/Fig6_FigS5-S8_alpha_diversity.R` |
+| Fig. S8 | `FigS8_alpha_diversity_profile_derivative.png` | `scripts/figures/Fig6_FigS5-S8_alpha_diversity.R` |
+| Fig. S9 | `FigS9_top80_pct_genera_distribution.png` | `scripts/figures/Fig7_FigS9_taxonomic_composition.R` |
 
 All are written to `results/figures/`. The remaining manuscript figures are schematics and
-photographs, not script output. Fig. 6 also writes its two panels separately, and several scripts
+photographs, not script output. Fig. 7 also writes its two panels separately, and several scripts
 produce companion figures and tables beyond those listed; statistical workbooks go to
 `results/statistics/`. Each script header lists its full output.
 
@@ -259,13 +301,19 @@ both.
 
 If you use parts of this pipeline, please cite the underlying tools as well as the manuscript:
 
+- **This study** -- manuscript under review; the full citation and DOI will be added here on
+  publication.
 - **KrakenTools** -- <https://github.com/jenniferlu717/KrakenTools> (Kraken2/Bracken report
   merging).
 - **KBKen** (S. Tiwari) -- <https://github.com/SumeetTiwari07/KBKen> (Bracken -> phyloseq import).
 - **FeGenie** -- <https://github.com/Arkadiy-Garber/FeGenie>.
 - **MagicLamp** -- <https://github.com/Arkadiy-Garber/MagicLamp>. FeGenie is run through MagicLamp
   here; script provenance is pinned in `scripts/local/fegenie/`.
-- **Lu & Salzberg (2022)** -- basis for the Kraken2 confidence threshold of 0.1.
+- **Szóstak et al. (2022)** -- basis for the Kraken2 confidence threshold of 0.1: Szóstak, N.,
+  Szymanek, A., Havránek, J. et al. The standardisation of the approach to metagenomic human gut
+  analysis: from sample collection to microbiome profiling. *Sci Rep* **12**, 8470 (2022).
+  <https://doi.org/10.1038/s41598-022-12037-3>. Their benchmark tested thresholds from 0 (the
+  default) to 0.6; 0.1 already reduced false-positive species calls markedly.
 - **Sequence data** -- NCBI SRA BioProject **PRJNA1480046**.
 
 ## License

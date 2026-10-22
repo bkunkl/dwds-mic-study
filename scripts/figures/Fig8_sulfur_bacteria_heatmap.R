@@ -1,5 +1,5 @@
 # ======================================================================== #
-# Fig. 7 -- Sulfur bacteria (SOB + SRB) heatmap at GENUS level
+# Fig. 8 -- Sulfur bacteria (SOB + SRB) heatmap at GENUS level
 #
 # Individual replicates (i.e. built from `sulf_otu_mat`, NOT merged by Label),
 # with a bottom bubble-plot annotation showing each replicate's total
@@ -11,6 +11,7 @@
 #   #2: Biofilm-no-nutri, #2: Biofilm-w/-nutri, #2: Bulk-no-nutri, #2: Bulk-w/-nutri,
 #   #3: Biofilm-no-nutri, #3: Biofilm-w/-nutri, #3: Bulk-no-nutri, #3: Bulk-w/-nutri,
 #   Base-Water
+# Experiments E1/E2/E3 are shown as #1/#2/#3.
 # `pilot1`/`pilot2`/`pilot3` in the metadata correspond to experiments E1/E2/E3.
 # Only E3 has the pre-incubation Base-Water control, so it is a single column.
 #
@@ -28,8 +29,8 @@
 #       define the row set of this figure and must accompany the repository.
 #
 # OUTPUT (into results/figures/)
-#   Fig7_complexHeatmap_sulfur_bacteria.png
-#   Fig7_complexHeatmap_sulfur_bacteria_plotting_data.csv
+#   Fig8_complexHeatmap_sulfur_bacteria.png
+#   Fig8_complexHeatmap_sulfur_bacteria_plotting_data.csv
 #
 # Run from the repository root. Needs the `gridtext` package installed for
 # ComplexHeatmap's gt_render() (italic genus row labels).
@@ -68,19 +69,19 @@ names(stepped_cols) <- c("Biofilm-no-nutri", "Biofilm-w/-nutri",
 # 1. Load raw data, keep individual replicates (no merge_samples by Label)
 # ------------------------------------------------------------------------ #
 
-pilot123_ps <- readRDS(ps_file)
-pilot123_ps <- subset_taxa(pilot123_ps, Domain == "Bacteria" | Domain == "Archaea")
-tax_table(pilot123_ps)[, "Genus"] <- as.character(tax_table(pilot123_ps)[, "Genus"])
+ps <- readRDS(ps_file)
+ps <- subset_taxa(ps, Domain == "Bacteria" | Domain == "Archaea")
+tax_table(ps)[, "Genus"] <- as.character(tax_table(ps)[, "Genus"])
 
 # Relative abundance BEFORE subsetting to SOB/SRB
-pilot123_ps_rel <- transform_sample_counts(pilot123_ps, function(x) x / sum(x))
+ps_rel <- transform_sample_counts(ps, function(x) x / sum(x))
 
 # ------------------------------------------------------------------------ #
 # 2. SOB / SRB subsetting (individual samples)
 # ------------------------------------------------------------------------ #
 
-pilot123_ps_sob_rel <- subset_taxa(
-  pilot123_ps_rel,
+ps_sob_rel <- subset_taxa(
+  ps_rel,
   !is.na(Genus) & Genus %in% SOB_genera$Genus
 )
 
@@ -89,23 +90,23 @@ pilot123_ps_sob_rel <- subset_taxa(
 methylo_keep <- c("Methylobacterium extorquens", "Methylorubrum extorquens",
                    "Methylobacterium fujisawaense", "Methylorubrum sp. GM97")
 
-pilot123_ps_sob_rel <- subset_taxa(
-  pilot123_ps_sob_rel,
+ps_sob_rel <- subset_taxa(
+  ps_sob_rel,
   !(Genus %in% c("Methylobacterium", "Methylorubrum")) | Species %in% methylo_keep
 )
 
-pilot123_ps_sob_rel <- subset_taxa(
-  pilot123_ps_sob_rel,
+ps_sob_rel <- subset_taxa(
+  ps_sob_rel,
   !(Genus == "Rhodobacter" & Species != "Rhodobacter capsulatus")
 )
 
-pilot123_ps_srb_rel <- subset_taxa(
-  pilot123_ps_rel,
+ps_srb_rel <- subset_taxa(
+  ps_rel,
   !is.na(Genus) & Genus %in% SRB_genera$Genus
 )
 
 # Merge SOB + SRB taxa (still one row per sample = one replicate)
-pilot123_ps_sulfur <- merge_phyloseq(pilot123_ps_sob_rel, pilot123_ps_srb_rel)
+ps_sulfur <- merge_phyloseq(ps_sob_rel, ps_srb_rel)
 
 # ------------------------------------------------------------------------ #
 # 3. Per-replicate total sulfur-bacteria abundance (used for bottom bubbles)
@@ -113,17 +114,17 @@ pilot123_ps_sulfur <- merge_phyloseq(pilot123_ps_sob_rel, pilot123_ps_srb_rel)
 #       renormalizing SOB+SRB to sum to 100%.
 # ------------------------------------------------------------------------ #
 
-sulfur_totals <- sample_sums(pilot123_ps_sulfur)
+sulfur_totals <- sample_sums(ps_sulfur)
 
-sulfur_metadata <- as.data.frame(sample_data(pilot123_ps_sulfur))
+sulfur_metadata <- as.data.frame(sample_data(ps_sulfur))
 stopifnot(identical(rownames(sulfur_metadata), names(sulfur_totals)))
 
 # ------------------------------------------------------------------------ #
 # 4. Derive SOB+SRB community fractions (sum to 100% per replicate)
 # ------------------------------------------------------------------------ #
 
-pilot123_ps_sulfur_derived <- transform_sample_counts(
-  pilot123_ps_sulfur,
+ps_sulfur_derived <- transform_sample_counts(
+  ps_sulfur,
   function(x) x / sum(x)
 )
 
@@ -131,7 +132,7 @@ pilot123_ps_sulfur_derived <- transform_sample_counts(
 # 5. Filter low-abundance / rare taxa at SPECIES level (individual samples)
 # ------------------------------------------------------------------------ #
 
-otu_table_derived <- as.data.frame(otu_table(pilot123_ps_sulfur_derived))
+otu_table_derived <- as.data.frame(otu_table(ps_sulfur_derived))
 taxa_abundance <- rowSums(otu_table_derived)
 taxa_prevalence <- rowSums(otu_table_derived > 0)
 
@@ -141,21 +142,21 @@ prevalence_threshold <- 5    # present in at least 5/13 samples
 taxa_to_keep <- (taxa_abundance >= abundance_threshold) &
   (taxa_prevalence >= prevalence_threshold)
 
-pilot123_ps_sulfur_filt <- prune_taxa(taxa_to_keep, pilot123_ps_sulfur_derived)
+ps_sulfur_filt <- prune_taxa(taxa_to_keep, ps_sulfur_derived)
 
 cat("\nIndividual-sample sulfur bacteria dataset (species level):",
-    ntaxa(pilot123_ps_sulfur_filt), "taxa across",
-    nsamples(pilot123_ps_sulfur_filt), "samples\n")
+    ntaxa(ps_sulfur_filt), "taxa across",
+    nsamples(ps_sulfur_filt), "samples\n")
 
 # ------------------------------------------------------------------------ #
 # 6. Aggregate to GENUS level (individual replicates, not merged by Label)
 # ------------------------------------------------------------------------ #
 
-pilot123_ps_sulfur_indiv_genus <- tax_glom(pilot123_ps_sulfur_filt, taxrank = "Genus")
+ps_sulfur_indiv_genus <- tax_glom(ps_sulfur_filt, taxrank = "Genus")
 
-sulf_otu_mat <- as.matrix(otu_table(pilot123_ps_sulfur_indiv_genus))
-sulf_tax_mat <- as.data.frame(tax_table(pilot123_ps_sulfur_indiv_genus))
-sulf_sample_df <- as.data.frame(sample_data(pilot123_ps_sulfur_indiv_genus))
+sulf_otu_mat <- as.matrix(otu_table(ps_sulfur_indiv_genus))
+sulf_tax_mat <- as.data.frame(tax_table(ps_sulfur_indiv_genus))
+sulf_sample_df <- as.data.frame(sample_data(ps_sulfur_indiv_genus))
 
 # ------------------------------------------------------------------------ #
 # 7. Determine SOB vs. SRB per genus, sort rows: SOB (A-Z), then SRB (A-Z)
@@ -183,7 +184,7 @@ sulf_otu_mat_ordered <- sulf_otu_mat[sulf_taxa_order, ]
 
 condition_order <- c("Biofilm-no-nutri", "Biofilm-w/-nutri",
                       "Bulk-no-nutri", "Bulk-w/-nutri")
-batch_order <- c("pilot1", "pilot2", "pilot3")
+batch_order <- c("E1", "E2", "E3")
 
 is_water <- sulf_sample_df$Label == "Base-Water"
 
@@ -208,7 +209,7 @@ sulf_sample_df_ordered <- sulf_sample_df[sample_order, ]
 # Column labels: just the experiment number "#N" under each replicate, and
 # nothing under the Base-Water control (its name is carried by the color band
 # and the "Sample Type" legend).
-batch_num <- gsub("pilot", "", sulf_sample_df_ordered$batch)
+batch_num <- sub("^E", "", sulf_sample_df_ordered$batch)
 display_labels <- ifelse(
   sulf_sample_df_ordered$Label == "Base-Water",
   "", # Originally "Base-Water"
@@ -440,14 +441,14 @@ plot_df <- data.frame(
 )
 
 write.csv(plot_df,
-          file = file.path(fig_dir, "Fig7_complexHeatmap_sulfur_bacteria_plotting_data.csv"),
+          file = file.path(fig_dir, "Fig8_complexHeatmap_sulfur_bacteria_plotting_data.csv"),
           row.names = FALSE)
 
 # ------------------------------------------------------------------------ #
 # 14. Draw and save
 # ------------------------------------------------------------------------ #
 
-png(file.path(fig_dir, "Fig7_complexHeatmap_sulfur_bacteria.png"),
+png(file.path(fig_dir, "Fig8_complexHeatmap_sulfur_bacteria.png"),
     width = 9.4, height = 2.7, units = "in", res = 300)
 draw(ht_indiv,
      padding = unit(c(1, -80, 2, 2), "mm"))
@@ -478,4 +479,4 @@ draw(
 popViewport()
 dev.off()
 
-cat("\nSaved 'Fig7_complexHeatmap_sulfur_bacteria.png' into", fig_dir, "\n")
+cat("\nSaved 'Fig8_complexHeatmap_sulfur_bacteria.png' into", fig_dir, "\n")

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-#SBATCH --job-name=Pilot123-assembly
+#SBATCH --job-name=E123-assembly
 #SBATCH --partition=cpu
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=20
@@ -10,7 +10,7 @@
 #SBATCH --mail-user=kunkli.balazs.tibor@uni-nke.hu
 #SBATCH --qos=normal
 #SBATCH --array=0-12
-#SBATCH --output=slurm-%A_%a__pilot123_assembly.out
+#SBATCH --output=slurm-%A_%a__E123_assembly.out
 
 # Preprocessing + assembly. One array task = one sample (13 samples, E1-E3).
 #
@@ -86,19 +86,14 @@ r2="${RAW_DIR}/${base}_R2.fastq.gz"
 
 exp=$(echo "${base}" | cut -d_ -f1)                 # E1
 snum=$(echo "${base}" | cut -d_ -f2)                # S174
-pilot="pilot${exp#E}"                               # pilot1 -- kept for continuity
-                                                     # with metadata_bracken_conf01.csv
-                                                     # and the pilot1/2/3 naming the
-                                                     # rest of the pipeline (incl. the
-                                                     # example */bamfiles_path.txt
-                                                     # tables) already uses
-s="${pilot}_${snum}"                                # pilot1_S174 -- long sample id
+s="${exp}_${snum}"                                  # E1_S174 -- long sample id, as in
+                                                     # data/metadata/metadata_bracken_conf01.csv
 sn="${snum}"                                        # S174 -- short id, used below for
                                                      # contig/BAM names
 
 echo "Processing sample: ${base} (s=${s}, sn=${sn})"
 
-out_megahit="${ASSEMBLY_ROOT}/${pilot}_ml100/assembly_megahit"
+out_megahit="${ASSEMBLY_ROOT}/${exp}_ml100/assembly_megahit"
 create_dir_if_not_exists "${out_megahit}"
 
 # ---- FastQC on the raw reads ----
@@ -171,7 +166,7 @@ rm -rf "${out_megahit}/${s}/intermediate_contigs"
 # already enforces it.
 fa_in="${out_megahit}/${s}/${s}.contigs.fa"
 fa_out="${out_megahit}/${sn}_contigs.fa"
-# Naming matters here: the Fig. 8 script (scripts/figures/Fig8_fegenie_iron_genes.R) strips
+# Naming matters here: the Fig. 9 script (scripts/figures/Fig9_fegenie_iron_genes.R) strips
 # "_contigs.fa" off this filename to get the sample column name, and the
 # data/metadata/E{1,2,3}_bamfiles_path.txt example tables key contigs by
 # this same "<sn>_contigs.fa" pattern. Keep it.

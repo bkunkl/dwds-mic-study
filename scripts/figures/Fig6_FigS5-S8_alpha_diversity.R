@@ -1,5 +1,5 @@
 # ======================================================================== #
-# Fig. 5 and Figs. S5-S8 -- alpha diversity of the pilot 1-3 metagenomes
+# Fig. 6 and Figs. S5-S8 -- alpha diversity of the E1-E3 metagenomes
 #
 # Implements the manuscript's alpha-diversity analysis:
 #   Hill numbers (q = 0 richness, q = 1 Shannon, q = 2 Simpson) estimated
@@ -7,7 +7,7 @@
 #   from the q=0 and q=1 Hill numbers, and a diversity profile over
 #   q = 0 ... 8.
 #
-# `pilot1`/`pilot2`/`pilot3` correspond to experiments E1/E2/E3. Two factors
+# Three experiments, E1/E2/E3 (shown as #1/#2/#3). Two factors
 # at two levels each: Nutrient (no-nutri / w-nutri) and Location
 # (bulk = planktonic / biofilm = carbon steel coupon surface). E1 and E3 ran
 # 35 days, E2 ran 60 days. Only E3 has the pre-incubation "Base-Water"
@@ -40,11 +40,11 @@
 #       model comparison of section 10
 #
 # OUTPUT (stage 1)
-#   results/inext_rarefaction/pilot123_diversity.RData
-#   results/pilot123_diversity_metadata_table.rds
+#   results/inext_rarefaction/otu_matrix_prok.rds
+#   results/diversity_metadata_table.rds
 #
 # OUTPUT (stage 2, into results/figures/)
-#   Fig5_alpha_diversity_metrics.png                      (+ 2 CSVs)
+#   Fig6_alpha_diversity_metrics.png                      (+ 2 CSVs)
 #   FigS5_model_coefficients_across_alpha_diversity_metrics.png   (+ CSV)
 #   FigS6_standardized_treatment_contrasts_cohens_d.png           (+ CSV)
 #   FigS7_alpha_diversity_profile.png                             (+ CSV)
@@ -123,16 +123,16 @@ print(median(sample_depths))
 # out, at the point where they become available.
 # ------------------------------------------------------------------------ #
 
-# read by scripts/hpc/03_inext_rarefaction_worker.R (and by the diversity-profile
-# worker described in scripts/hpc/README.md), which load() this file and index into
-# otu_matrix's columns with the SLURM array task ID
-save(otu_matrix, meta_c1, file = "results/inext_rarefaction/pilot123_diversity.RData")
+# read by scripts/hpc/03_inext_rarefaction_worker.R (for both the rarefaction
+# and the diversity-profile jobs), which indexes into otu_matrix's columns with
+# the SLURM array task ID
+saveRDS(otu_matrix, "results/inext_rarefaction/otu_matrix_prok.rds")
 
 # read by scripts/local/04_merge_rarefaction_results.R and
 # scripts/local/05_merge_diversity_profiles.R -- they take the sample name, batch and
 # Label of column N of otu_matrix from row N of this table, so the row order
 # of meta_c1 must match the column order of otu_matrix.
-saveRDS(meta_c1, "results/pilot123_diversity_metadata_table.rds")
+saveRDS(meta_c1, "results/diversity_metadata_table.rds")
 
 
 # ######################################################################## #
@@ -186,7 +186,7 @@ stepped_cols <- pals::stepped(n=24)[c(5,7,13,15,22)]
 #   *_df / *_data -- sample depth, sample name, batch, Label, qD. Used by
 #                    the depth/treatment models in section 6 (Fig. S5).
 #   *_iNEXT       -- qD, batch, Label only. Used by the boxplots in section
-#                    5 (Fig. 5) and the effect sizes in section 7 (Fig. S6).
+#                    5 (Fig. 6) and the effect sizes in section 7 (Fig. S6).
 #
 # NOTE ON ORDER: the *_iNEXT block is kept here, immediately before its first
 # use in the effect-size section, so the script runs top to bottom.
@@ -279,8 +279,7 @@ pielou_iNEXT <- data.frame(
 )
 
 # Pielou's evenness is not on the same scale as the other three
-# They must be plotted separately
-# Previously I did it altogether in the div_4_indices objects, but overwrote them.
+# diversity indices, so it is kept separate and plotted independently.
 div_3_indices <- rbind(richness_iNEXT,
                        shannon_iNEXT,
                        simpson_iNEXT)
@@ -293,7 +292,7 @@ div_3_indices$Diversity_Index <- factor(div_3_indices$Diversity_Index,
 pielou_iNEXT$Diversity_Index <- "Pielou"
 
 # ------------------------------------------------------------------------ #
-# 5. Fig. 5 -- alpha diversity metrics by sample type
+# 5. Fig. 6 -- alpha diversity metrics by sample type
 #
 # Three Renyi entropies (H0 = log richness, H1 = Shannon, H2 = log Simpson)
 # on a shared scale in one panel row, plus Pielou's evenness in its own
@@ -353,7 +352,7 @@ p_div_3_boxplots_renyi <- ggplot(div_3_indices_renyi, aes(x = Label, y = qD_reny
 # Written here, before the Base-Water relabelling below, because that is the
 # state ggplot() captured (see the note on that step).
 write.csv(div_3_indices_renyi,
-          file = file.path(fig_dir, "Fig5_alpha_diversity_metrics_plotting_data.csv"),
+          file = file.path(fig_dir, "Fig6_alpha_diversity_metrics_plotting_data.csv"),
           row.names = FALSE)
 
 # add geom_label_repel to the data points in the boxplot:
@@ -414,7 +413,7 @@ p_pielou <- ggplot(data = pielou_iNEXT, aes(x = Label, y = qD, fill = Label))+
   guides(fill = "none", color = "none")
 
 write.csv(pielou_iNEXT,
-          file = file.path(fig_dir, "Fig5_alpha_diversity_metrics_pielou_plotting_data.csv"),
+          file = file.path(fig_dir, "Fig6_alpha_diversity_metrics_pielou_plotting_data.csv"),
           row.names = FALSE)
 
 # add repel labels to pielou boxplot:
@@ -469,7 +468,7 @@ p_div3_plus_pielou_repel <- grid.arrange(arrangeGrob(p_div_3_boxplots_renyi_repe
 
 # ggsave() confuses the legends here (the object is a gtable, not a ggplot),
 # so the png device is used instead.
-png(filename = file.path(fig_dir, "Fig5_alpha_diversity_metrics.png"),
+png(filename = file.path(fig_dir, "Fig6_alpha_diversity_metrics.png"),
     width = 16, height = 8, res = 300, units = "in")
 print(p_div3_plus_pielou_repel)
 dev.off()
@@ -944,7 +943,7 @@ print(rel_derivatives_summary)
 #                                                                          #
 #  10. ADDITIONAL STATISTICS -- NOT MANUSCRIPT FIGURES                     #
 #                                                                          #
-#  Nothing below is needed to reproduce Fig. 5 or Figs. S5-S8. These are    #
+#  Nothing below is needed to reproduce Fig. 6 or Figs. S5-S8. These are    #
 #  the supporting analyses that justify the modelling choices made above,   #
 #  kept because they answer the obvious reviewer questions. They can be     #
 #  skipped without affecting any figure.                                    #
@@ -1173,4 +1172,4 @@ write.csv(profile_effects,
 ggsave(file.path(fig_dir, "effect_sizes_across_hill_spectrum.png"),
        p_heatmap_profile, width = 14, height = 8, dpi = 300)
 
-cat("\nSaved Fig5 and FigS5-S8 into", fig_dir, "\n")
+cat("\nSaved Fig6 and FigS5-S8 into", fig_dir, "\n")

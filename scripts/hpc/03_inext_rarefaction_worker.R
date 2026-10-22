@@ -8,7 +8,7 @@
 # parallelise at the version used here -- this per-sample split across a
 # SLURM array is the workaround, not a speedup within a single run.
 #
-# INPUT   ./pilot123_diversity.RData  (otu_matrix, meta_c1) in the working
+# INPUT   ./otu_matrix_prok.rds  (species x 13 samples) in the working
 #         directory the sbatch cd'd into
 # OUTPUT  ./inext_q<Q>_col<N>_dense_low_sizes_result.rds, one per array task;
 #         merged afterwards by scripts/local/04_merge_rarefaction_results.R
@@ -27,11 +27,11 @@ if (length(args) < 2) {
 hill_n <- as.numeric(args[1])
 col_index <- as.numeric(args[2])
 
-# Load the OTU matrix (species x 13 samples) + metadata, built from the
-# phyloseq object by stage 1 of scripts/figures/Fig5_FigS5-S8_alpha_diversity.R.
+# Load the OTU matrix (species x 13 samples), built from the
+# phyloseq object by stage 1 of scripts/figures/Fig6_FigS5-S8_alpha_diversity.R.
 # Expected in the current working directory --
 # see scripts/hpc/03_inext_rarefaction_array.sbatch.
-load("./pilot123_diversity.RData")
+otu_matrix <- readRDS("./otu_matrix_prok.rds")
 
 # Calculate smart endpoint (2x median sequencing depth -- balanced between
 # giving every sample room to extrapolate and not extrapolating so far that

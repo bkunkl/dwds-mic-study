@@ -2,8 +2,7 @@
 
 The 26 files in this directory (13 samples x R1/R2) are **0-byte placeholders**. They exist only
 to show the expected directory layout and naming convention. The real reads are deposited at NCBI
-SRA under BioProject accession **PRJNA1480046**. The dataset is not yet public — release is
-pending manuscript review — so it cannot be mirrored here.
+SRA under BioProject accession **PRJNA1480046**. The sequencing dataset is scheduled for public release upon publication of the associated article.
 
 Once public, download with `prefetch` + `fasterq-dump` (sra-tools) or via the ENA mirror, and drop
 the files into this directory under the same names to reproduce the pipeline unchanged.

@@ -18,7 +18,7 @@ From: rocker/r-ver:4.5.1
     R -e 'BiocManager::install(version = "3.21", ask = FALSE)'
 
     # Bioconductor: phyloseq 1.52.0, ComplexHeatmap 2.28.0 come with Bioc 3.21
-    R -e 'BiocManager::install(c("phyloseq", "ComplexHeatmap"), ask = FALSE, update = FALSE)'
+    R -e 'BiocManager::install(c("phyloseq", "ComplexHeatmap", "microbiome"), ask = FALSE, update = FALSE)'
 
     # CRAN, version-pinned
     R -e 'remotes::install_version("iNEXT",         version = "3.0.1",  repos = "https://cloud.r-project.org")'

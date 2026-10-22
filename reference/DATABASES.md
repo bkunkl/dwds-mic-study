@@ -59,7 +59,7 @@ NR_DB="/path/to/nr.dmnd"  # set    -> validation runs
 ```
 
 With `NR_DB` empty the core annotation still runs and still writes
-`FeGenie-heatmap-data.csv`, which is everything `scripts/figures/Fig8_fegenie_iron_genes.R` needs. Skipping
+`FeGenie-heatmap-data.csv`, which is everything `scripts/figures/Fig9_fegenie_iron_genes.R` needs. Skipping
 it saves roughly 200 GB of disk and a large amount of compute; the cost is that gene calls are not
 cross-checked against nr.
 

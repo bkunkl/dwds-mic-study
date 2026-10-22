@@ -13,7 +13,7 @@
 #          rise; this is where the near-complete coverage becomes visible.
 #
 # Facets are the five sample types; colour is the experiment.
-# `pilot1`/`pilot2`/`pilot3` in the Assemblage names correspond to E1/E2/E3.
+# The Assemblage names start with the experiment, #1/#2/#3 = E1/E2/E3.
 # Only E3 has the pre-incubation Base-Water control, so that facet holds a
 # single curve.
 #

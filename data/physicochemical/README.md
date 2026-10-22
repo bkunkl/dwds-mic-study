@@ -67,7 +67,7 @@ coefficients in the analysis script quantify.
 Fe(II) and Fe(III) were only measured in E2 and E3, hence 24 rather than 36
 rows for those two endpoints, and no E1-vs-E3 batch comparison for them.
 
-## Provenance and known issues
+## Provenance
 
 - The unit for total hardness is given as `mg/L as CaCO3` here, matching the
   supplementary data workbook the analysis script writes. Note that the source

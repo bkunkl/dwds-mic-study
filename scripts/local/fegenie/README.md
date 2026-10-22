@@ -15,7 +15,7 @@ It produces one file
 
 | File | What it is |
 |---|---|
-| `FeGenie_asrun.py` | Exactly what produced the published results (Fig. 8) |
+| `FeGenie_asrun.py` | Exactly what produced the published results (Fig. 9) |
 
 Copy it over MagicLamp's `genies/FeGenie.py`.
 

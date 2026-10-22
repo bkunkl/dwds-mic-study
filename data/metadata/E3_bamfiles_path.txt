@@ -1,5 +1,5 @@
-S1_contigs.fa	/path/to/repo/results/pilot3_ml100/assembly_megahit/S1.bam
-S27_contigs.fa	/path/to/repo/results/pilot3_ml100/assembly_megahit/S27.bam
-S2_contigs.fa	/path/to/repo/results/pilot3_ml100/assembly_megahit/S2.bam
-S3_contigs.fa	/path/to/repo/results/pilot3_ml100/assembly_megahit/S3.bam
-S4_contigs.fa	/path/to/repo/results/pilot3_ml100/assembly_megahit/S4.bam
+S1_contigs.fa	/path/to/repo/results/E3_ml100/assembly_megahit/S1.bam
+S27_contigs.fa	/path/to/repo/results/E3_ml100/assembly_megahit/S27.bam
+S2_contigs.fa	/path/to/repo/results/E3_ml100/assembly_megahit/S2.bam
+S3_contigs.fa	/path/to/repo/results/E3_ml100/assembly_megahit/S3.bam
+S4_contigs.fa	/path/to/repo/results/E3_ml100/assembly_megahit/S4.bam

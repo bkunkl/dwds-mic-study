@@ -46,12 +46,11 @@ dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
 # 21 mass-loss measurements with their three design factors, read from a tidy
 # CSV and assembled into CR_df below.
 #
-# NOTE on factor level order: as.factor() sorts with the locale's collation.
-# In the locale this analysis was run in, sort(c("-nutri", "+nutri")) puts
-# "-nutri" first, and that ordering is assumed by the ART contrast
-# coefficients in section 5. In a C/POSIX locale "+nutri" would sort first
-# and those coefficients would address the wrong cells. See
-# the contrast comments below.
+# Contrast coefficients are positional, so their interpretation depends on
+# the reference-grid order. That order can depend on factor levels, locale,
+# and the package or method used. The ART-C vectors below are defined for
+# art.con()'s concatenated-factor grid; verify the grid order and intended
+# comparisons when defining or reviewing contrasts.
 CR_raw <- read.csv("data/physicochemical/corrosion_rate.csv",
                    stringsAsFactors = FALSE)
 
@@ -208,22 +207,20 @@ emm
 # the ART-C contrast procedure for the same 4 planned contrasts, adjusted with
 # BH within each subset.
 
-# Planned contrasts for the ART-C procedure. The coefficients are positional,
-# written for the level order art.con() uses internally: it pastes the two
+# Planned contrasts for the ART-C procedure. The coefficients are positional
+# and aligned to the level order art.con() uses internally: it pastes the two
 # factor columns into one character column ("C,-nutri", "DW,+nutri", ...) and
-# calls factor() on it, so the levels are the sorted concatenated strings --
-# Sterilization outermost, Nutrient cycling fastest (ARTool 0.11.2,
-# R/art.con.internal.R):
+# calls factor() on it. For this model, the resulting order is:
 #       1 (C,-nutri)   2 (C,+nutri)   3 (DW,-nutri)   4 (DW,+nutri)
 #
-# This is NOT the order emmeans uses for `~ Sterilization * Nutrient` on a
-# plain lm, where the first-named factor cycles fastest:
+# emmeans may order the same interaction grid differently. Its order for
+# `~ Sterilization * Nutrient` on a plain lm has the first-named factor
+# cycling fastest:
 #       1 (C,-nutri)   2 (DW,-nutri)   3 (C,+nutri)   4 (DW,+nutri)
 #
-# The two differ by a 2 <-> 3 transposition. Both accept length-4 vectors, so
-# handing these coefficients to emmeans::contrast() would not error -- it would
-# silently trade the within-Sterilization and between-Sterilization tests under
-# each other's labels. Use this list with art.con() only.
+# Because both methods accept length-4 vectors, define coefficients for the
+# specific method and confirm that their positions match the intended
+# comparisons. Use this list with art.con() only.
 #
 # BH (Benjamini-Hochberg / FDR) is applied within each Duration subset. These
 # four contrasts are not all pairwise comparisons of one family, so Tukey and
@@ -245,10 +242,9 @@ art_35 <- ARTool::art(Corrosion_rate ~ Sterilization * Nutrient, data = CR_35)
 art_60 <- ARTool::art(Corrosion_rate ~ Sterilization * Nutrient, data = CR_60)
 
 # art.con() builds that grid with factor(paste(f1, f2, sep = ",")), and
-# factor() sorts by the locale's collation. These coefficients assume
-# "-nutri" sorts before "+nutri", which is true in the locale this analysis
-# ran in but NOT in a C/POSIX locale. Fail loudly rather than silently
-# mislabel (note: containers/r_inext.def sets LC_ALL=C).
+# factor() sorts by the locale's collation. The check below makes the expected
+# order explicit and stops if the actual order differs from the coefficient
+# definitions.
 art_c_levels <- function(d) levels(factor(paste(d$Sterilization, d$Nutrient, sep = ",")))
 expected_art_c_levels <- c("C,-nutri", "C,+nutri", "DW,-nutri", "DW,+nutri")
 stopifnot(identical(art_c_levels(CR_35), expected_art_c_levels),

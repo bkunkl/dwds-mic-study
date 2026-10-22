@@ -9,17 +9,17 @@
 #   for q in 0 1 2; do Rscript ../../local/04_merge_rarefaction_results.R $q; done
 #
 # INPUT   ./inext_q<Q>_col<1..13>_dense_low_sizes_result.rds
-#         ../pilot123_diversity_metadata_table.rds
+#         ../diversity_metadata_table.rds
 # OUTPUT  ./inext_q<Q>_combined_columnwise_inext_object_dense_low_sizes_result.rds
 #         (class "iNEXT"; read by scripts/figures/FigS4_rarefaction_sample_coverage.R)
 library(iNEXT)
 library(dplyr)
 
 # Metadata table saved once by stage 1 of
-# scripts/figures/Fig5_FigS5-S8_alpha_diversity.R, alongside pilot123_diversity.RData. Kept at
-# results/pilot123_diversity_metadata_table.rds, one level above this
+# scripts/figures/Fig6_FigS5-S8_alpha_diversity.R, alongside otu_matrix_prok.rds. Kept at
+# results/diversity_metadata_table.rds, one level above this
 # script's working directory.
-metadata_table_path <- "../pilot123_diversity_metadata_table.rds"
+metadata_table_path <- "../diversity_metadata_table.rds"
 meta_c1 <- readRDS(metadata_table_path)
 
 # Function to create proper iNEXT object
@@ -133,13 +133,13 @@ combine_inext_columnwise_results <- function(q_value, n_columns = 13) {
             # Create mapping table
             sample_mapping <- data.frame(
                 original = rownames(meta_c1),  # Match the names you used
-                batch = gsub("pilot", "#", meta_c1$batch),
+                batch = sub("^E", "#", meta_c1$batch),
                 Label = meta_c1$Label,
                 stringsAsFactors = FALSE
             )
 
             # Set control batch label
-            ctrl_idx <- which(sample_mapping$original == "pilot3_S27_conf01_k2")
+            ctrl_idx <- which(sample_mapping$original == "E3_S27_conf01_k2")
             if (length(ctrl_idx) > 0) {
                 sample_mapping$batch[ctrl_idx] <- "Ctrl"
             }
@@ -147,7 +147,7 @@ combine_inext_columnwise_results <- function(q_value, n_columns = 13) {
             # Create display names
             sample_mapping$display_name <- paste(sample_mapping$batch, sample_mapping$Label, sep=": ")
 
-            # Apply name replacement (pilot1_S174_conf01_k2 -> #1: Biofilm-no-nutri):
+            # Apply name replacement (E1_S174_conf01_k2 -> #1: Biofilm-no-nutri):
             combined_inext_object <- replace_assemblage_names(combined_inext_object, sample_mapping)
 
             # Check if replacement worked
