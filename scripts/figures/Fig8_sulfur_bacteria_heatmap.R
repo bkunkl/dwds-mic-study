@@ -12,6 +12,7 @@
 #   #3: Biofilm-no-nutri, #3: Biofilm-w/-nutri, #3: Bulk-no-nutri, #3: Bulk-w/-nutri,
 #   Base-Water
 # Experiments E1/E2/E3 are shown as #1/#2/#3.
+# `pilot1`/`pilot2`/`pilot3` in the metadata correspond to experiments E1/E2/E3.
 # Only E3 has the pre-incubation Base-Water control, so it is a single column.
 #
 # Bubble diameters are area-scaled (diameter ~ sqrt(value)).
