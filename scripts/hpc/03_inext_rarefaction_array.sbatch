@@ -9,7 +9,7 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=kunkli.balazs.tibor@uni-nke.hu
 #SBATCH --qos=normal
-#SBATCH --output=slurm-%A_%a_pilot123_dense_low_sizes.out
+#SBATCH --output=slurm-%A_%a_E123_dense_low_sizes.out
 #SBATCH --array=1-13
 
 # iNEXT rarefaction/extrapolation, one array task per sample (one column of
@@ -45,11 +45,11 @@ REPO_ROOT="$(pwd)"
 R_CONTAINER="${REPO_ROOT}/containers/r_inext.sif"
 CONTAINER_CALL="singularity exec -B ${REPO_ROOT}:${REPO_ROOT} ${R_CONTAINER}"
 
-# The worker loads "pilot123_diversity.RData" (an `otu_matrix` of species x 13
-# samples, built from the phyloseq object -- see scripts/hpc/README.md for exactly
-# where that file comes from) from its working directory, and writes its
-# per-sample .rds result there too. Place/symlink that .RData into
-# results/inext_rarefaction/ before submitting.
+# The worker reads "otu_matrix_prok.rds" (species x 13 samples, built from the
+# phyloseq object -- see scripts/hpc/README.md for exactly where that file
+# comes from) from its working directory, and writes its per-sample .rds
+# result there too. Stage 1 of the alpha-diversity figure script writes it
+# straight into results/inext_rarefaction/.
 WORKDIR="${REPO_ROOT}/results/inext_rarefaction"
 mkdir -p "${WORKDIR}"
 cd "${WORKDIR}" || exit

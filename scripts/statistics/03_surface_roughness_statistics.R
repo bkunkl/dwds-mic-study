@@ -163,42 +163,22 @@ surf_rough_35_unpol_df |> dplyr::group_by(Polishing) |> dplyr::summarise(var = v
 # ------------------------------------------------------------------------ #
 # Planned contrasts
 # ------------------------------------------------------------------------ #
-# IMPORTANT BUG FIX (found while sanity-checking the "After" contrast results
-# against the raw group means): the ORIGINAL version of this script hard-coded
-# the contrast coefficients assuming emmeans' Sterilization x Nutrient grid is
-# ordered c(C.-nutri, C.+nutri, DW.-nutri, DW.+nutri) -- i.e. Nutrient cycling
-# fastest. In fact emmeans orders the grid with the FIRST-named factor
-# (Sterilization) cycling fastest:
-#   c(C.-nutri, DW.-nutri, C.+nutri, DW.+nutri)
-# Applying the old coefficient vectors to that actual grid silently computed
-# the WRONG comparison under each label -- rows 1<->3 and 2<->4 were swapped.
-# Concretely, what was printed as "(C,+nutri) - (DW,+nutri)" (p = 0.79) was
-# actually computing (DW,-nutri) - (DW,+nutri) [0.450 vs 0.467, genuinely
-# tiny and non-significant], while the REAL (C,+nutri) - (DW,+nutri)
-# comparison [0.036 vs 0.467, the visually obvious ~10-fold difference] was
-# hiding under the "(DW,-nutri) - (DW,+nutri)" label, with p < 0.0001.
-# This explains the "surprising" result: it wasn't unequal n (8 vs 12) or a
-# genuine ANOVA failure -- it was a label/coefficient mismatch.
+# Contrast coefficients are positional: each coefficient applies to the
+# corresponding row of the reference grid. Check the grid's factor levels and
+# row order rather than assuming an ordering, since this can depend on the
+# factors, package, and contrast method. A correctly sized coefficient vector
+# may still describe a different comparison if its positions do not match the
+# intended groups, so verify contrast labels and estimates against the
+# underlying group means when defining or reviewing contrasts.
 #
-# Fix: build the contrast coefficient vector by matching factor LEVEL NAMES
-# in whatever grid is actually returned, rather than assuming a fixed
-# position order. This is robust regardless of how emmeans orders the grid.
-#
-# Scope of that fix: emmeans only. The note above originally continued
-# "...and ARTool's art.con, which builds its reference grid the same way".
-# It does not. art.con() -> artlm.con() -> generate.art.concatenated.df()
-# pastes the two factor columns into ONE character column ("C,-nutri",
-# "DW,+nutri", ...) and calls factor() on it, so the ART-C grid is the sorted
-# concatenated strings -- Nutrient cycling fastest:
-#     emmeans   1 (C,-nutri)  2 (DW,-nutri)  3 (C,+nutri)  4 (DW,+nutri)
-#     art.con   1 (C,-nutri)  2 (C,+nutri)   3 (DW,-nutri) 4 (DW,+nutri)
-# (ARTool 0.11.2, R/art.con.internal.R). The two differ by a 2 <-> 3
-# transposition, and both accept length-4 coefficient vectors, so passing one
-# grid's coefficients to the other runs silently and simply relabels the
-# results. emmeans and ARTool therefore need SEPARATE coefficient definitions:
-# this helper is used only with emmeans::contrast() (sections 1 and 2), and
-# section 3 defines a separate positional `wanted_contrasts` list for
-# art.con(). Do not "clean up" that duplication.
+# Here, emmeans orders this Sterilization x Nutrient grid with Sterilization
+# cycling fastest:
+#   (C,-nutri), (DW,-nutri), (C,+nutri), (DW,+nutri)
+# This helper matches factor-level names in the returned grid, avoiding an
+# assumption about its positional order. Other packages or methods may build
+# their reference grids differently. In particular, the ART contrasts in
+# section 3 use a separate coefficient list aligned to art.con()'s grid; keep
+# those definitions specific to their respective grids.
 make_wanted_contrasts <- function(grid) {
   gdf <- as.data.frame(grid)
   idx <- function(steril, nutri) which(gdf$Sterilization == steril & gdf$Nutrient == nutri)
@@ -351,14 +331,12 @@ art_60 <- ARTool::art(Surf_roughness ~ Sterilization * Nutrient, data = surf_rou
 anova_60_art <- anova(art_60)
 anova_60_art
 
-# ART handles contrast levels in a different way from emmeans (see the note at
-# make_wanted_contrasts() above), so the 60-day contrasts are defined
-# positionally against art.con()'s own concatenated grid, whose level order is
+# These ART contrasts use coefficients aligned to art.con()'s concatenated
+# interaction grid, whose order here is
 #     1 (C,-nutri)  2 (C,+nutri)  3 (DW,-nutri)  4 (DW,+nutri)
-# Do NOT pass make_wanted_contrasts() here: it matches names in the emmeans
-# grid, whose order differs by a 2 <-> 3 transposition, and art.con() would
-# apply those coefficients positionally -- silently swapping the labels in
-# pairs rather than erroring.
+# The emmeans helper above targets emmeans' grid instead. Keep definitions
+# specific to each method and verify that the coefficient positions match the
+# intended comparisons.
 wanted_contrasts <- list(
   "(C,-nutri) - (C,+nutri)"   = c( 1, -1,  0,  0),
   "(DW,-nutri) - (DW,+nutri)" = c( 0,  0,  1, -1),
@@ -367,10 +345,9 @@ wanted_contrasts <- list(
 )
 
 # art.con() builds that grid with factor(paste(f1, f2, sep = ",")), and
-# factor() sorts by the locale's collation. These coefficients assume
-# "-nutri" sorts before "+nutri", which is true in the locale this analysis
-# ran in but NOT in a C/POSIX locale. Fail loudly rather than silently
-# mislabel (note: containers/r_inext.def sets LC_ALL=C).
+# factor() sorts by the locale's collation. The check below makes the expected
+# order explicit and stops if the actual order differs from the coefficient
+# definitions.
 art_c_levels <- function(d) levels(factor(paste(d$Sterilization, d$Nutrient, sep = ",")))
 expected_art_c_levels <- c("C,-nutri", "C,+nutri", "DW,-nutri", "DW,+nutri")
 stopifnot(identical(art_c_levels(surf_rough_60_df), expected_art_c_levels))

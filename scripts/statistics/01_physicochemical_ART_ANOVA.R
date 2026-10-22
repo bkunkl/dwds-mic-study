@@ -54,7 +54,7 @@
 #   ART_ANOVA_random-effects_VarCorr.xlsx
 #   pH_Day0_ART_ANOVA.xlsx                  pH Day-0 reference contrast
 #   ART_ANOVA_Executive_Summaries_FDR.xlsx
-#   Figure2_3_p_values.xlsx
+#   Figure3_4_p_values.xlsx
 # OUTPUT (into results/figures/)
 #   FigS2_heatmap_treatment_contrasts.png       (+ plotting data CSV)
 #   FigS3_heatmap_Batch-pair_comparisons.png    (+ plotting data CSV)
@@ -747,7 +747,7 @@ snT_pairs_list <- list() # Time-only pairs at fixed S,N
 syn_list      <- list()  # per-parameter synthesis (Fisher p + meta r)
 varCorr_list  <- list()  # lme4::VarCorr() output
 icc_rows      <- list()  # batch-effect ICC / R2
-sn35_list     <- list()  # 35d S*N contrasts, for the Fig. 3 annotations
+sn35_list     <- list()  # 35d S*N contrasts, for the Fig. 4 annotations
 long_all_list <- list()  # per-batch contrast tables, all endpoints
 
 # ------------------------------------------------------------------------ #
@@ -760,6 +760,10 @@ for (i in seq_along(df_list)) {
   dir_name <- dir_names[i]
   response_var_name <- names(current_data)[1]  # First column is the response variable
 
+  # Start a fresh workbook summary for each endpoint. Endpoints without
+  # Batch #1 at 35d skip section A and should not inherit its sheets.
+  response_var_summary <- list()
+
   output_path <- file.path(base_path, dir_name)
   CreateDirIfNotYet(output_path)
 
@@ -770,17 +774,8 @@ for (i in seq_along(df_list)) {
   # ---- A) 35-day, Batch-focused ANOVA: is there a batch effect? ----
   # Fe(II) and Fe(III) were not measured in experiment #1, so they skip this.
   #
-  # NOTE: `response_var_summary` is created ONLY in this branch, while
-  # sections B and C below append to it unconditionally. For
-  # Fe2 and Fe3 the branch is skipped, so the workbook written for those two
-  # endpoints still carries the ANOVA_SNB_effects / ANOVA_SNB_contrasts /
-  # ANOVA_B_contrast / Random_effect_VarCorr / Mixed_effect_R_sq /
-  # Mixed_effect_ICC sheets left over from the PREVIOUS endpoint in df_list
-  # (total Fe, which immediately precedes Fe2). Those six sheets in
-  # fe(ii)_ART_ANOVA_tables.xlsx and fe(iii)_ART_ANOVA_tables.xlsx describe
-  # total Fe, not Fe(II)/Fe(III). Only the per-endpoint workbooks are affected;
-  # every table that feeds the manuscript figures is built from the
-  # accumulators below, which are correctly gated on has_1_3.
+  # Their workbook summaries are initialized above and receive only sheets
+  # produced for the current endpoint in the sections below.
   if (has_1_3) {
     n_endpoints <- 14
     data_35d <- current_data %>% dplyr::filter(Time == "35d") %>% droplevels()
@@ -800,7 +795,7 @@ for (i in seq_along(df_list)) {
     # add ART eta^2 (rank scale): SS_effect / (SS_effect + SS_residual)
     art_aov_df <- eta2_from_anova(anova_df = art_aov_df, is_art = !use_log_35)
 
-    response_var_summary <- list(ANOVA_SNB_effects = art_aov_df)
+    response_var_summary$ANOVA_SNB_effects <- art_aov_df
 
     # ---- A1) Unified 35d S*N*Batch ANOVA ----
     exec35_list[[param_name]] <- art_aov_df %>%
@@ -808,7 +803,7 @@ for (i in seq_along(df_list)) {
                        p_value = `Pr(>F)`, eta2_partial = eta2_partial)
 
     contrast_art_SNB_df <- contrastArtTable(m_35, contrast = "Sterilization:Nutrient:Batch")
-    # for Fig. 3
+    # for Fig. 4
     contrast_art_SN_35d_df <- contrastArtTable(m_35, contrast = "Sterilization:Nutrient")
     sn35_list[[param_name]] <- contrast_art_SN_35d_df %>% dplyr::mutate(Parameter = param_name)
 
@@ -1060,7 +1055,7 @@ write_xlsx(
   ),
   file.path(base_path, "pH_Day0_ART_ANOVA.xlsx")
 )
-                     
+
 # ------------------------------------------------------------------------ #
 # 9. Binding: executive tables across all endpoints
 # ------------------------------------------------------------------------ #
@@ -1169,50 +1164,50 @@ syn_q_mat <- syn_all %>% select(Parameter, contrast, q_BH) %>%
 syn_r_mat <- syn_all %>% select(Parameter, contrast, r_meta) %>%
   tidyr::pivot_wider(names_from = contrast, values_from = r_meta)
 
-# Fig. 2 annotations -- treatment comparisons
+# Fig. 3 annotations -- treatment comparisons
 # (pH's "(C,-nutri) - (DW,-nutri)" row is the Day-0 referenced one, flagged)
-fig2_stats <- syn_all %>%
+fig3_stats <- syn_all %>%
   dplyr::filter(Parameter %in% c("ORP", "DO", "SO4", "pH", "Mn", "NO2", "NO3"),
                 contrast %in% wanted_contrasts[3:4]) %>%
   dplyr::mutate(signif = sig_code(q_BH),
                 flag   = dplyr::if_else(!is.na(cell_note), "†", ""))
 
-# Fig. 3 annotations -- iron speciation, within incubation duration
+# Fig. 4 annotations -- iron speciation, within incubation duration
 long_all <- dplyr::bind_rows(long_all_list)
 
-fig3_endpoints <- c("Fe", "Fe2", "Fe3")
+fig4_endpoints <- c("Fe", "Fe2", "Fe3")
 
 # 60-day: always single-batch (k = 1); batch #2 is the only 60-day run
-fig3_60d <- long_all %>%
-  dplyr::filter(Parameter %in% fig3_endpoints, Batch == "#2", contrast %in% wanted_contrasts) %>%
+fig4_60d <- long_all %>%
+  dplyr::filter(Parameter %in% fig4_endpoints, Batch == "#2", contrast %in% wanted_contrasts) %>%
   dplyr::rename(p_val = p.value) %>%
   dplyr::mutate(Duration = "60d")
 
 # 35-day, total Fe: batches #1 and #3 both ran 35d -> use m_35's pooled S*N contrast
-fig3_35d_Fe <- dplyr::bind_rows(sn35_list) %>%
+fig4_35d_Fe <- dplyr::bind_rows(sn35_list) %>%
   dplyr::filter(Parameter == "Fe", contrast %in% wanted_contrasts) %>%
   dplyr::rename(p_val = p.value) %>%
   dplyr::mutate(Duration = "35d")
 
 # 35-day, Fe2/Fe3: only batch #3 ran 35d for these -> single-batch
-fig3_35d_Fe23 <- long_all %>%
+fig4_35d_Fe23 <- long_all %>%
   dplyr::filter(Parameter %in% c("Fe2", "Fe3"), Batch == "#3", contrast %in% wanted_contrasts) %>%
   dplyr::rename(p_val = p.value) %>%
   dplyr::mutate(Duration = "35d")
 
-fig3_all <- dplyr::bind_rows(fig3_60d, fig3_35d_Fe, fig3_35d_Fe23) %>%
+fig4_all <- dplyr::bind_rows(fig4_60d, fig4_35d_Fe, fig4_35d_Fe23) %>%
   dplyr::mutate(
-    # one flat correction, Fig. 3's own family (3 endpoints x 4 contrasts x 2 durations = 24 tests)
-    q_BH_fig3 = p.adjust(p_val, method = "BH"),
-    signif    = sig_code(q_BH_fig3),
+    # one flat correction, Fig. 4's own family (3 endpoints x 4 contrasts x 2 durations = 24 tests)
+    q_BH_fig4 = p.adjust(p_val, method = "BH"),
+    signif    = sig_code(q_BH_fig4),
     contrast  = factor(contrast, levels = wanted_contrasts, ordered = TRUE),
     Duration  = factor(Duration, levels = c("35d", "60d"), ordered = TRUE)
   ) %>%
   dplyr::arrange(Parameter, Duration, contrast)
 
 write_xlsx(
-  list(Fig2_p_vals = fig2_stats, Fig3_p_vals = fig3_all),
-  file.path(base_path, "Figure2_3_p_values.xlsx")
+  list(Fig3_p_vals = fig3_stats, Fig4_p_vals = fig4_all),
+  file.path(base_path, "Figure3_4_p_values.xlsx")
 )
 
 # ------------------------------------------------------------------------ #
@@ -1776,7 +1771,7 @@ h_syn <- make_Fisher_combined_contrast_heatmap_dual(
   title  = "",
   abbrev = TRUE,
   row_order = row_labels_order,
-  row_labels = proper_labels_unicode
+  row_labels = proper_labels_unicode,
   # pH: the Day-0 referenced contrast sits in this cell (section 8b)
   flag_cells = data.frame(RowID = "pH", ColID = pH_invalid_contrast),
   flag_r = TRUE

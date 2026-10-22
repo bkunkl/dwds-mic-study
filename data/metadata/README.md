@@ -19,14 +19,11 @@ before incubation, unique to E3.
 
 - **`metadata_bracken_conf01.csv`** — per-sample metadata used downstream in R (`sample`, `batch`,
   `sample_number`, `original_name`, `condition`, `type`, `Label`), keyed to the Kraken2/Bracken
-  output at confidence 0.1 (`sample` column, e.g. `pilot1_S174_conf01_k2`). `pilot1`/`pilot2`/`pilot3`
-  here correspond to E1/E2/E3.
-- **`pilot123_metadata.ods`** — original sample sheet (single sheet, `Sheet1`), source of truth.
-- **`pilot123_metadata.csv`** — CSV export of the above via
+  output at confidence 0.1 (`sample` column, e.g. `E1_S174_conf01_k2`).
+- **`E123_metadata.ods`** — original sample sheet (single sheet, `Sheet1`), source of truth.
+- **`E123_metadata.csv`** — CSV export of the above via
   `soffice --headless --convert-to csv`. The `.ods` has only one sheet, so nothing is lost in the
-  export. Note: the `batch` column in the source spreadsheet literally contains the string
-  `"batch"` for every row rather than `pilot1`/`pilot2`/`pilot3` — this is a pre-existing quirk of
-  the original file, reproduced faithfully here, not an export artifact.
+  export. The `batch` column in the source spreadsheet contains the string `E1`/`E2`/`E3`.
 - **`E1_bamfiles_path.txt`**, **`E2_bamfiles_path.txt`**, **`E3_bamfiles_path.txt`** — two-column
   tables (contig FASTA name -> BAM path, tab-separated, no header) used as the `-bams` input table
   for FeGenie/MagicLamp, one per experiment. Shipped here as worked examples of the expected format;
@@ -37,7 +34,7 @@ before incubation, unique to E3.
 ## Sulfur bacteria genus lists
 
 `SOB_genus_list_comprehensive.csv` and `SRB_genus_list_comprehensive.csv` are hand-curated genus
-lists defining the row set of Fig. 7 (`scripts/figures/Fig7_sulfur_bacteria_heatmap.R`). Columns:
+lists defining the row set of Fig. 8 (`scripts/figures/Fig8_sulfur_bacteria_heatmap.R`). Columns:
 
 | Column | Meaning |
 |---|---|

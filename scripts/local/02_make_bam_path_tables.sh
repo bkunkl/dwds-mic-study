@@ -1,19 +1,19 @@
 #!/bin/bash
 
 # Generate the bamfiles_path.txt tables that scripts/local/03_run_fegenie.sh reads with
-# MagicLamp's -bams flag. One table per pilot, written into its assembly_megahit
+# MagicLamp's -bams flag. One table per experiment, written into its assembly_megahit
 # directory: two columns, tab-separated, no header -- contig FASTA, then the BAM
 # it maps to. See data/metadata/E{1,2,3}_bamfiles_path.txt for worked examples.
 #
 # Matches the naming from scripts/hpc/01_preprocess_and_assemble.sbatch: contigs
 # "<sample>_contigs.fa", BAM "<sample>.bam", both under
-# results/<pilot>_ml100/assembly_megahit/.
+# results/<experiment>_ml100/assembly_megahit/.
 
 REPO_ROOT="$(pwd)"
 ASSEMBLY_ROOT="${REPO_ROOT}/results"
 
-for pilot in pilot{1..3}_ml100; do
-    assembly_dir="${ASSEMBLY_ROOT}/${pilot}/assembly_megahit"
+for exp in E{1..3}_ml100; do
+    assembly_dir="${ASSEMBLY_ROOT}/${exp}/assembly_megahit"
     [ -d "$assembly_dir" ] || continue
 
     cd "$assembly_dir"

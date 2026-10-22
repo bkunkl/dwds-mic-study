@@ -6,7 +6,7 @@
 # finished. Runs on a local workstation, not the cluster.
 #
 # The resulting "unified_extended_diversity_profiles.rds" is what
-# stage 2 of scripts/figures/Fig5_FigS5-S8_alpha_diversity.R loads to plot the
+# stage 2 of scripts/figures/Fig6_FigS5-S8_alpha_diversity.R loads to plot the
 # alpha-diversity profile (FigS7/FigS8).
 library(dplyr)
 
@@ -19,9 +19,9 @@ q_values <- c(
 
 # Run from results/diversity_profile/ (where the array jobs wrote their
 # per-(q, sample) .rds files). The metadata table is saved once by the
-# alpha-diversity analysis (stage 1 of scripts/figures/Fig5_FigS5-S8_alpha_diversity.R)
-# alongside pilot123_diversity.RData, one level up from here.
-meta_c1 <- readRDS("../pilot123_diversity_metadata_table.rds")
+# alpha-diversity analysis (stage 1 of scripts/figures/Fig6_FigS5-S8_alpha_diversity.R)
+# alongside otu_matrix_prok.rds, one level up from here.
+meta_c1 <- readRDS("../diversity_metadata_table.rds")
 
 # Function to combine results for a specific q value
 combine_q_results <- function(q_value, n_columns = 13) {
@@ -57,7 +57,7 @@ combine_q_results <- function(q_value, n_columns = 13) {
             if(cb_estimate$Label == "Base-Water"){
               cb_estimate$batch <- "Ctrl"
             } else {
-              cb_estimate$batch <- gsub(pattern = "pilot", replacement = "#", cb_estimate$batch)
+              cb_estimate$batch <- sub(pattern = "^E", replacement = "#", cb_estimate$batch)
             }
             # Remove Assemblage column
             cb_estimate <- cb_estimate[,-1]
@@ -75,7 +75,7 @@ combine_q_results <- function(q_value, n_columns = 13) {
             if(all_cb_estimates$Label[1] == "Base-Water"){
               all_cb_estimates$batch <- "Ctrl"
             } else {
-              all_cb_estimates$batch <- gsub(pattern = "pilot", replacement = "#", all_cb_estimates$batch)
+              all_cb_estimates$batch <- sub(pattern = "^E", replacement = "#", all_cb_estimates$batch)
             }
 
             # Remove Assemblage column

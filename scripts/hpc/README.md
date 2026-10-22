@@ -37,14 +37,14 @@ enforces it at assembly time.
 
 **Naming is load-bearing downstream:** contig FASTA files are named `<sample>_contigs.fa` (e.g.
 `S174_contigs.fa`) and their BAMs `<sample>.bam` (e.g. `S174.bam`), where `<sample>` is the bare
-sample number (no experiment/pilot prefix). The Fig. 8 script (`scripts/figures/Fig8_fegenie_iron_genes.R`) strips
+sample number (no experiment prefix). The Fig. 9 script (`scripts/figures/Fig9_fegenie_iron_genes.R`) strips
 `_contigs.fa` off the column-source filename to recover the sample id, and the
 `data/metadata/E{1,2,3}_bamfiles_path.txt` example tables key off this same pattern. Keep it if you
 change anything upstream of this step.
 
 ## `02_kraken2_bracken.sbatch`
 
-Kraken2 (confidence 0.1 only -- Lu & Salzberg 2022) + Bracken (species level, read length 150,
+Kraken2 (confidence 0.1 only -- Szóstak et al. 2022) + Bracken (species level, read length 150,
 default threshold) on the 140 bp read set from `01_preprocess_and_assemble.sbatch`. The original
 version of this script swept confidence 0.0/0.1/0.2; only 0.1 was used in the manuscript, so the
 sweep is gone here.
@@ -144,7 +144,7 @@ that name is obsolete and no such file exists.)
 
 Two consequences of sharing the worker, both handled by the submitter:
 
-- The worker `load()`s `pilot123_diversity.RData` from its own working directory, so the submitter
+- The worker reads `otu_matrix_prok.rds` from its own working directory, so the submitter
   symlinks it into `results/diversity_profile/` from `results/inext_rarefaction/`.
 - The worker names its output after the rarefaction step, so each generated sbatch renames the
   result to `diversity_profile_q<Q>_col<N>_result.rds` afterwards -- that is what
@@ -154,19 +154,20 @@ Two consequences of sharing the worker, both handled by the submitter:
 across the full q sweep into `unified_extended_diversity_profiles.{rds,csv}` (one row per
 observed q x sample estimate) and `all_q_extended_iNextEstimates.{rds,csv}` (every coverage-based
 point iNEXT computed, not just the observed-size one). The figure script that plots the alpha
-diversity profile (`scripts/figures/Fig5_FigS5-S8_alpha_diversity.R`) loads the first
+diversity profile (`scripts/figures/Fig6_FigS5-S8_alpha_diversity.R`) loads the first
 of those two.
 
-### Where `pilot123_diversity.RData` and the metadata table come from
+### Where `otu_matrix_prok.rds` and the metadata table come from
 
-Both `03`'s worker and the two `local/` merge scripts depend on files this repo doesn't build yet:
+Both `03`'s worker and the two `local/` merge scripts read two small files derived from the phyloseq
+object. They are not shipped, because stage 1 rebuilds them in seconds:
 
-- `pilot123_diversity.RData` -- an `otu_matrix` (species x 13 samples), built from the phyloseq
+- `otu_matrix_prok.rds` -- an OTU matrix (prokaryotic species x 13 samples), built from the phyloseq
   object (`scripts/local/01_build_phyloseq_object.sh`'s output) by stage 1 of the alpha-diversity analysis
-  (`scripts/figures/Fig5_FigS5-S8_alpha_diversity.R`). Needed in `results/inext_rarefaction/` before submitting
+  (`scripts/figures/Fig6_FigS5-S8_alpha_diversity.R`). Needed in `results/inext_rarefaction/` before submitting
   `03`.
-- `pilot123_diversity_metadata_table.rds` -- saved by that same script. Needed at
-  `results/pilot123_diversity_metadata_table.rds` (one level above both `results/inext_rarefaction/`
+- `diversity_metadata_table.rds` -- saved by that same script. Needed at
+  `results/diversity_metadata_table.rds` (one level above both `results/inext_rarefaction/`
   and `results/diversity_profile/`) before running either `scripts/local/04` or `scripts/local/05`.
 
 Both are written by stage 1 of that script, which runs before the HPC array jobs; stage 2 resumes

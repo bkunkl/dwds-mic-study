@@ -1,7 +1,7 @@
 # Kraken2 classification rates
 
 `kraken2_classification_rates.csv` -- the fraction of reads Kraken2 could assign to any
-taxon, one row per sample. Read by `scripts/figures/Fig5_FigS5-S8_alpha_diversity.R` (stage 2,
+taxon, one row per sample. Read by `scripts/figures/Fig6_FigS5-S8_alpha_diversity.R` (stage 2,
 section 4).
 
 | Column | Meaning |

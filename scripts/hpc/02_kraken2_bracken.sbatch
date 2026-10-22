@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-#SBATCH --job-name=Pilot123_kraken2_bracken
+#SBATCH --job-name=E123_kraken2_bracken
 #SBATCH --partition=bigdata
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
@@ -9,11 +9,11 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=kunkli.balazs.tibor@uni-nke.hu
 #SBATCH --qos=normal
-#SBATCH --output=slurm-%j__pilot123_tax.out
+#SBATCH --output=slurm-%j__E123_tax.out
 
-# Taxonomic profiling of the pilot samples with reads at least 140 bp long
+# Taxonomic profiling of the E1-E3 samples with reads at least 140 bp long
 # (scripts/hpc/01_preprocess_and_assemble.sbatch's minlength=140 regime). Kraken2 at
-# confidence 0.1 (Lu & Salzberg 2022; see the top-level README for why), then
+# confidence 0.1 (Szóstak et al. 2022; see the top-level README for why), then
 # Bracken at species level. The original version of this script also swept
 # confidence 0.0 and 0.2 -- dropped, this study only used 0.1.
 

@@ -47,11 +47,11 @@ REPO_ROOT="$(pwd)"
 WORKDIR="${REPO_ROOT}/results/diversity_profile"
 mkdir -p "${WORKDIR}"
 
-# The worker load()s pilot123_diversity.RData from whatever directory it is
+# The worker reads otu_matrix_prok.rds from whatever directory it is
 # started in. That file is written into results/inext_rarefaction/ by stage 1
-# of scripts/figures/Fig5_FigS5-S8_alpha_diversity.R, so link it in here as well.
-if [ ! -e "${WORKDIR}/pilot123_diversity.RData" ]; then
-  ln -s ../inext_rarefaction/pilot123_diversity.RData "${WORKDIR}/pilot123_diversity.RData"
+# of scripts/figures/Fig6_FigS5-S8_alpha_diversity.R, so link it in here as well.
+if [ ! -e "${WORKDIR}/otu_matrix_prok.rds" ]; then
+  ln -s ../inext_rarefaction/otu_matrix_prok.rds "${WORKDIR}/otu_matrix_prok.rds"
 fi
 
 # Create temporary script with expanded variables

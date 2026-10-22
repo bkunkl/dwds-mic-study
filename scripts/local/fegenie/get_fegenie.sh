@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# Reconstruct the FeGenie.py used in this study, and an optional bug-fixed variant.
+# Reconstruct the FeGenie.py used in this study.
 #
 # We do not redistribute FeGenie itself. This script fetches the exact upstream
 # revision and applies the patch shipped alongside it.
 #
-#   FeGenie_asrun.py   - the version behind the published results (Fig. 8) 
-#   described in /scripts/local/fegenie/README.mdREADME.md
+#   FeGenie_asrun.py   - the version behind the published results (Fig. 9),
+#                        described in scripts/local/fegenie/README.md
 #
 # Usage:  ./get_fegenie.sh [outdir]
-# Then copy the chosen file over MagicLamp's genies/FeGenie.py.
+# Then copy the file over MagicLamp's genies/FeGenie.py.
 
 set -e
 

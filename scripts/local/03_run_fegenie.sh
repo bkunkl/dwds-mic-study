@@ -24,15 +24,15 @@ REPO_ROOT="$(pwd)"
 # FeGenie's -ref flag BLASTs (via DIAMOND) every candidate hit against a reference
 # protein database to validate it -- here, NCBI nr (release 2024-02-08, ~200 GB).
 # Set NR_DB to a local nr path to run it; leave empty to skip. Skipping still
-# produces the core annotation (FeGenie-heatmap-data.csv), everything Fig8 needs.
+# produces the core annotation (FeGenie-heatmap-data.csv), everything Fig9 needs.
 NR_DB=""
 
 run_FeGenie () {
-    local pilot="$1"
-    local w_dir="${REPO_ROOT}/results/${pilot}/assembly_megahit"
+    local exp="$1"
+    local w_dir="${REPO_ROOT}/results/${exp}/assembly_megahit"
     cd "${w_dir}" || exit 1
 
-    local logFile="${pilot}_megahit_FeGenie_complete.log"
+    local logFile="${exp}_megahit_FeGenie_complete.log"
     echo -e "\nStarting $(date) \nMagicLamp.py FeGenie\n\n" >> "$logFile"
 
     local ref_args=()
@@ -50,6 +50,6 @@ run_FeGenie () {
     cd "${REPO_ROOT}"
 }
 
-for pilot in pilot{1..3}_ml100; do
-    run_FeGenie "$pilot"
+for exp in E{1..3}_ml100; do
+    run_FeGenie "$exp"
 done

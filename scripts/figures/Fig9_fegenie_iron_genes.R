@@ -1,5 +1,5 @@
 # ======================================================================== #
-# Fig. 8 -- FeGenie iron-related functional gene categories, all samples
+# Fig. 9 -- FeGenie iron-related functional gene categories, all samples
 #
 # Implements the manuscript methods sentence:
 #   "Iron-related genes were annotated with MagicLamp v1.0, integrating
@@ -9,28 +9,27 @@
 #    percentile) via metagenomeSeq (v1.50.0)."
 #
 # Each dot is one iron gene category in one sample; dot area is the
-# depth-normalized gene coverage. `pilot1`/`pilot2`/`pilot3` correspond to
-# experiments E1/E2/E3. Only E3 has the pre-incubation Base-Water control,
+# depth-normalized gene coverage. Experiments E1/E2/E3 are shown as
+# #1/#2/#3. Only E3 has the pre-incubation Base-Water control,
 # which is plotted as its own single column at the right-hand end.
 #
 # INPUT (produced by the HPC pipeline, see hpc/ and scripts/local/03_run_fegenie.sh)
-#   results/pilot?_ml100/assembly_megahit/S*_contigs.fa.depth.txt
+#   results/E?_ml100/assembly_megahit/S*_contigs.fa.depth.txt
 #       per-sample contig depth tables from jgi_summarize_bam_contig_depths
-#   results/pilot?_ml100/assembly_megahit/FeGenie_complete_results/FeGenie-heatmap-data.csv
+#   results/E?_ml100/assembly_megahit/FeGenie_complete_results/FeGenie-heatmap-data.csv
 #       FeGenie/MagicLamp gene-category x sample coverage table
 #   data/metadata/metadata_bracken_conf01.csv
-#       used only to turn "pilot1.S174" style column names into readable labels
+#       used only to turn "E1.S174" style column names into readable labels
 #
 # OUTPUT (into results/figures/)
-#   Fig8_FeGenie_iron_related_functional_gene_categories.png
-#   Fig8_FeGenie_iron_related_functional_gene_categories_plotting_data.csv
-#   Fig8_FeGenie_CSS75_normalized_table.csv
+#   Fig9_FeGenie_iron_related_functional_gene_categories.png
+#   Fig9_FeGenie_iron_related_functional_gene_categories_plotting_data.csv
+#   Fig9_FeGenie_CSS75_normalized_table.csv
 #   plus, optionally (section 8), the condition-mean +/- SD companion figure
 #
-# NOTE: all 13 samples, including the E3 "Base-Water" pre-incubation control
-# (S27), are CSS(75th percentile) normalized, so every dot area is on the same
-# scale. An earlier version of this script dropped S27 from the depth-file list
-# while keeping its FeGenie column, leaving it on raw rounded coverage.
+# All 13 samples, including the E3 "Base-Water" pre-incubation control (S27),
+# are included in the analysis. Depth-derived normalization factors are mapped
+# to FeGenie sample columns before plotting.
 #
 # Run from the repository root.
 # ======================================================================== #
@@ -53,11 +52,10 @@ dir.create(fig_dir, recursive = TRUE, showWarnings = FALSE)
 # ------------------------------------------------------------------------ #
 
 # Assemblies were repeated with reads filtered to >= 100 bp, hence "_ml100".
-megahit_depth_files <- Sys.glob("results/pilot?_ml100/assembly_megahit/S*_contigs.fa.depth.txt")
+megahit_depth_files <- Sys.glob("results/E?_ml100/assembly_megahit/S*_contigs.fa.depth.txt")
 
-# All 13 samples are globbed, S27 (the E3 "Base-Water" pre-incubation control)
-# included, so every column of the FeGenie matrix gets its own normalization
-# factor. S27 used to be filtered out here -- do not reintroduce that.
+# The depth-file list includes all 13 samples, including S27 (the E3
+# "Base-Water" pre-incubation control).
 
 # Extract sample IDs from file paths
 sample_ids <- str_extract(megahit_depth_files, "S\\d+")
@@ -91,27 +89,27 @@ norm_factors_75 <- sapply(megahit_depth_list, function(x) x$norm_factor)
 # 2. Combine the three FeGenie heatmap tables into one count matrix
 # ------------------------------------------------------------------------ #
 
-megahit_files <- Sys.glob("results/pilot?_ml100/assembly_megahit/FeGenie_complete_results/FeGenie-heatmap-data.csv")
-pilot_names <- paste0("pilot", 1:3)
+megahit_files <- Sys.glob("results/E?_ml100/assembly_megahit/FeGenie_complete_results/FeGenie-heatmap-data.csv")
+exp_names <- paste0("E", 1:3)
 megahit_list <- lapply(seq_along(megahit_files), function(i) {
   hmap_dat <- read.csv(megahit_files[i], row.names=1)
   hmap_dat <- hmap_dat[, -ncol(hmap_dat)]
   colnames(hmap_dat) <- gsub("_contigs.fa", "", colnames(hmap_dat))
   round(hmap_dat)
 })
-names(megahit_list) <- pilot_names
+names(megahit_list) <- exp_names
 
 # Reorder columns so every experiment reads
 # Biofilm-no-nutri, Biofilm-w-nutri, Bulk-no-nutri, Bulk-w-nutri
-megahit_list$pilot2 <- megahit_list$pilot2[,c(1,3,2,4)]
+megahit_list$E2 <- megahit_list$E2[,c(1,3,2,4)]
 # Let's put the BaseWater sample at the end of the table
 # That way we have to modify the code the least
-megahit_list$pilot3 <- megahit_list$pilot3[,c(1,4,3,5,2)]
+megahit_list$E3 <- megahit_list$E3[,c(1,4,3,5,2)]
 
 merged_megahit <- do.call(cbind, megahit_list)
 merged_megahit <- as.matrix(merged_megahit)
 
-# Extract the sample IDs from FeGenie column names ("pilot1.S174" -> "S174")
+# Extract the sample IDs from FeGenie column names ("E1.S174" -> "S174")
 fegenie_sample_ids <- sapply(strsplit(colnames(merged_megahit), "\\."), function(x) x[2])
 print(fegenie_sample_ids)  # Should now correctly show S174, S175, etc.
 new_order <- match(fegenie_sample_ids, sample_ids)
@@ -124,11 +122,10 @@ normalize_FeGenie_with_depth <- function(fegenie_matrix, norm_factors, sample_ma
   # Create a copy of the original matrix
   normalized_matrix <- fegenie_matrix
 
-  # Apply normalization factors to each column. Both `if`s are guards: a
-  # column with no matching normalization factor would fall through and be
-  # carried over as RAW rounded coverage, silently off-scale from the rest.
-  # With section 1 globbing all 13 depth files, nothing falls through -- if
-  # anything ever does, the sample is missing its depth file.
+  # Apply a normalization factor when both the FeGenie-to-sample mapping and
+  # the corresponding depth-derived factor are available. Unmatched columns
+  # remain unchanged, so review the sample mapping if the input sample set
+  # changes.
   for (col in colnames(fegenie_matrix)) {
     if (col %in% names(sample_mapping)) {
       depth_sample <- sample_mapping[[col]]
@@ -169,12 +166,12 @@ if(any(is.na(match(colnames(normalized_megahit_75), metadata_table$combined)))) 
 }
 
 colnames(normalized_megahit_75) <- paste(meta_ordered$batch, meta_ordered$Label, sep = ":")
-colnames(normalized_megahit_75) <- gsub(pattern = "pilot", replacement = "#",colnames(normalized_megahit_75))
+colnames(normalized_megahit_75) <- sub(pattern = "^E", replacement = "#", colnames(normalized_megahit_75))
 # Remove batch number from Base-Water
 colnames(normalized_megahit_75)[which(grepl("Base-Water", colnames(normalized_megahit_75)))] <- "Base-Water"
 
 write.csv(normalized_megahit_75,
-          file = file.path(fig_dir, "Fig8_FeGenie_CSS75_normalized_table.csv"))
+          file = file.path(fig_dir, "Fig9_FeGenie_CSS75_normalized_table.csv"))
 
 # ------------------------------------------------------------------------ #
 # 5. Helpers and palette
@@ -230,16 +227,16 @@ FeGenie_full_CSS_75_megahit <- generate_full_df_for_plotting(normalized_megahit_
 # Export the final data frame that goes into the plot, for inspection
 write.csv(FeGenie_full_CSS_75_megahit$melt_df,
           file = file.path(fig_dir,
-                           "Fig8_FeGenie_iron_related_functional_gene_categories_plotting_data.csv"),
+                           "Fig9_FeGenie_iron_related_functional_gene_categories_plotting_data.csv"),
           row.names = FALSE)
 
 # ------------------------------------------------------------------------ #
-# 7. Fig. 8 -- dot plot over all samples
+# 7. Fig. 9 -- dot plot over all samples
 # ------------------------------------------------------------------------ #
 
 FeGenie_dotplotter_allsamples <- function(FeGenie_df_melt,
                                            size_legend_title = "Normalized Gene Coverage",
-                                           outfile = file.path(fig_dir, "Fig8_FeGenie_iron_related_functional_gene_categories.png")) {
+                                           outfile = file.path(fig_dir, "Fig9_FeGenie_iron_related_functional_gene_categories.png")) {
 
   n_samples <- length(unique(FeGenie_df_melt$Sample))
   width_unit <- n_samples * 1.2
@@ -291,7 +288,7 @@ FeGenie_dotplotter_allsamples <- function(FeGenie_df_melt,
 FG_dp_all_plot_object <- FeGenie_dotplotter_allsamples(
   FeGenie_df_melt = FeGenie_full_CSS_75_megahit$melt_df,
   size_legend_title = "Normalized Gene Coverage",
-  outfile = file.path(fig_dir, "Fig8_FeGenie_iron_related_functional_gene_categories.png")
+  outfile = file.path(fig_dir, "Fig9_FeGenie_iron_related_functional_gene_categories.png")
 )
 
 FG_dp_all_plot_object
@@ -454,4 +451,4 @@ write.csv(FeGenie_CSS_75_megahit$melt_means_df,
           file = file.path(fig_dir, "FeGenie_iron_gene_categories_condition_means_plotting_data.csv"),
           row.names = FALSE)
 
-cat("\nSaved 'Fig8_FeGenie_iron_related_functional_gene_categories.png' into", fig_dir, "\n")
+cat("\nSaved 'Fig9_FeGenie_iron_related_functional_gene_categories.png' into", fig_dir, "\n")

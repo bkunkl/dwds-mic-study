@@ -1,5 +1,5 @@
 # ======================================================================== #
-# Fig. 6 and Fig. S9 -- taxonomic composition of the 13 metagenomes
+# Fig. 7 and Fig. S9 -- taxonomic composition of the 13 metagenomes
 #
 # Both figures start from the same Kraken2/Bracken phyloseq object
 # (confidence 0.1, species level) restricted to Bacteria + Archaea, but are
@@ -11,14 +11,13 @@
 #           how many species sit in that top-80% group versus in the
 #           remaining ~20% ("Other").
 #
-#   PART II (Fig. 6)  -- CLR PCA of the species table (panel a, with 90%
+#   PART II (Fig. 7)  -- CLR PCA of the species table (panel a, with 90%
 #           normal-theory ellipses per nutrient condition) paired with a
 #           microViz "iris" plot of the 15 most abundant species (panel b).
 #
-# `pilot1`/`pilot2`/`pilot3` in the metadata correspond to experiments
-# E1/E2/E3; in the figures they are shown as #1/#2/#3. Only E3 has the
-# pre-incubation Base-Water control, so that sample type has a single
-# replicate (no error bars, no jittered points).
+# Experiments E1/E2/E3 (the `batch` column of the metadata) are shown as
+# #1/#2/#3 in the figures. Only E3 has the pre-incubation Base-Water
+# control, so that sample type has a single replicate (no error bars, no jittered points).
 #
 # NOTE ON THE ORIGINAL SCRIPT: it looped over three Kraken2 confidence
 # levels (0.0, 0.1, 0.2) and carried every phyloseq object in a named list.
@@ -35,9 +34,9 @@
 #   FigS9_top80_pct_genera_distribution_plotting_data.csv
 #   FigS9_top80_pct_genera_individual_replicates.csv
 #   FigS9_species_count_80_20_ratio_plotting_data.csv
-#   Fig6_PCA_and_iris_paired_plot_top_species.png
-#   Fig6_PCA_and_iris_paired_plot_top_species_plotting_data.csv
-#   Fig6_iris_panel_bar_data.csv
+#   Fig7_PCA_and_iris_paired_plot_top_species.png
+#   Fig7_PCA_and_iris_paired_plot_top_species_plotting_data.csv
+#   Fig7_iris_panel_bar_data.csv
 #   plus the single panels of both figures, saved separately
 #
 # Run from the repository root.
@@ -899,7 +898,7 @@ write.csv(species_ratio_data,
 cat("\nSaved 'FigS9_top80_pct_genera_distribution.png' into", fig_dir, "\n")
 
 # ======================================================================== #
-# PART II -- Fig. 6: CLR PCA + iris plot of the top 15 species
+# PART II -- Fig. 7: CLR PCA + iris plot of the top 15 species
 # ======================================================================== #
 
 # ------------------------------------------------------------------------ #
@@ -990,7 +989,7 @@ ntaxa(ps_prok_clean)
 # ------------------------------------------------------------------------ #
 # 9. Sample labels used on the plots
 #
-#    ggrepel label preparation: pilot1/2/3 become #1/#2/#3, and the single
+#    ggrepel label preparation: E1/E2/E3 become #1/#2/#3, and the single
 #    Base-Water sample gets no batch label at all.
 # ------------------------------------------------------------------------ #
 
@@ -1000,7 +999,7 @@ ntaxa(ps_prok_clean)
 sam_df <- as(sample_data(ps_prok_clean), "data.frame")
 
 # Modify the batch column
-sam_df$batch <- gsub("pilot", "#", sam_df$batch)
+sam_df$batch <- sub("^E", "#", sam_df$batch)
 
 # Set empty batch for Base-Water samples
 bw_i <- which(sam_df$Label == "Base-Water")
@@ -1201,17 +1200,17 @@ generate_ord_plots <- function(ps,
 
   # save
   ggsave(
-    filename = file.path(fig_dir, "Fig6_panel_a_PCA_ellipses.png"),
+    filename = file.path(fig_dir, "Fig7_panel_a_PCA_ellipses.png"),
     plot     = p_ord,
     width    = 6, height = 4, dpi = 300
   )
   ggsave(
-    filename = file.path(fig_dir, "Fig6_panel_b_iris_top_species.png"),
+    filename = file.path(fig_dir, "Fig7_panel_b_iris_top_species.png"),
     plot     = p_iris,
     width    = 6, height = 6, dpi = 300
   )
   ggsave(
-    filename = file.path(fig_dir, "Fig6_PCA_and_iris_paired_plot_top_species.png"),
+    filename = file.path(fig_dir, "Fig7_PCA_and_iris_paired_plot_top_species.png"),
     plot     = p_pair,
     width    = pair_width, height = 6, dpi = 300
   )
@@ -1225,7 +1224,7 @@ ord_plots_prok <- generate_ord_plots(ps_prok_clean,
                                      n_taxa = 15)
 
 # ------------------------------------------------------------------------ #
-# 11. Export the data behind Fig. 6
+# 11. Export the data behind Fig. 7
 # ------------------------------------------------------------------------ #
 
 # PCA sample scores (panel a)
@@ -1237,14 +1236,14 @@ shapiro.test(pca_scores$PC1[pca_scores$type == "Biofilm"])
 shapiro.test(pca_scores$PC2[pca_scores$type == "Biofilm"])
 
 write.csv(pca_scores,
-          file = file.path(fig_dir, "Fig6_PCA_and_iris_paired_plot_top_species_plotting_data.csv"),
+          file = file.path(fig_dir, "Fig7_PCA_and_iris_paired_plot_top_species_plotting_data.csv"),
           row.names = FALSE)
 
 # The bars of the iris panel (panel b): one row per species x sample wedge
 iris_bar_data <- ggplot2::ggplot_build(ord_plots_prok$iris)$data[[1]]
 
 write.csv(iris_bar_data,
-          file = file.path(fig_dir, "Fig6_iris_panel_bar_data.csv"),
+          file = file.path(fig_dir, "Fig7_iris_panel_bar_data.csv"),
           row.names = FALSE)
 
-cat("\nSaved 'Fig6_PCA_and_iris_paired_plot_top_species.png' into", fig_dir, "\n")
+cat("\nSaved 'Fig7_PCA_and_iris_paired_plot_top_species.png' into", fig_dir, "\n")
